@@ -5,7 +5,7 @@
 ; Bindings for libsndfile 1.2.0
 ; Must be used in conjunction of libsndfile.load.pb to import the actual functions.
 ;
-; Tested on: Windows (x86, x64)
+; Tested on: Windows, Linux (x86, x64)
 ;
 ; 1.0, Aug 03 2023, PB 6.02 
 ; *********************************************************************************************************************
@@ -463,7 +463,7 @@ Module libsndfile
  ; NOP
 EndModule
 ; IDE Options = PureBasic 6.02 LTS (Windows - x64)
-; CursorPosition = 19
+; CursorPosition = 7
 ; Folding = ---
 ; Markers = 424
 ; EnableXP

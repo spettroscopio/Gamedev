@@ -1,8 +1,8 @@
 Windows 
-Built OpenAL with support for the following backends: WinMM, DirectSound, WASAPI, WaveFile
+Built OpenAL with support for the following backends: WinMM, DirectSound, WASAPI, WaveFile.
 
 Linux
-Built OpenAL with support for the following backends: PulseAudio, ALSA, SndIO, SDL2, WaveFile
+Built OpenAL with support for the following backends: PulseAudio, ALSA, SndIO, SDL2, WaveFile.
 
 Built myself from the sources.
 

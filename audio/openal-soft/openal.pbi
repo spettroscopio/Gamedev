@@ -5,7 +5,7 @@
 ; Bindings for OpenaAL Soft 1.23.1
 ; Must be used in conjunction of openal.load.pb to import the actual functions.
 ;
-; Tested on: Windows (x86, x64)
+; Tested on: Windows, Linux (x86, x64)
 ;
 ; 1.0, Jul 28 2023, PB 6.02 
 ;
@@ -273,8 +273,8 @@ Module openal
  ; NOP
 EndModule
 
-; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 2
+; IDE Options = PureBasic 6.02 LTS (Windows - x64)
+; CursorPosition = 7
 ; Folding = -
 ; EnableXP
 ; EnableUser
