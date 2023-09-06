@@ -26,7 +26,7 @@ The sub-repository is organized this way:
 Just PureBasic. The only dependencies are the OpenAL Soft and LibSndFile libraries and they are included.<br>
 All the test code should work inside the IDE without the need of altering paths, looking for libraries around, etc.<br>
 
-### What you have to do to distribute something compiled with SGL ?
+### What you have to do to distribute something using this ?
 The binaries of the LibSndFile library are under audio/libsndfile/lib.<br>
 The binaries of the OpenAL Soft library are under audio/openal-soft/lib.<br>
 If you build an executable then the correct dinamic libraries must be copied to the same directory of the executable, or under ./lib or ./bin below that directory.<br>
