@@ -21,7 +21,7 @@ The sub-repository is organized this way:
 Just PureBasic. The only dependency is the GLFW library and it's included.<br>
 All the test code should work inside the IDE without the need of altering paths, looking for libraries around, etc.<br>
 
-### What you have to do to distribute something compiled with SGL ?
+### What you have to do to distribute something using this ?
 The binaries of the GLFW library are under glfw/lib.<br>
 Static linking is supported only on Windows.<br>
 If you build an executable and select dinamic linking in your configuration file (sgl.pbi) or in your private copy of it, then the correct dinamic library must be copied to the same directory of the executable, or under ./lib or ./bin below that directory.<br>
@@ -36,4 +36,3 @@ My idea is now to start using this to build a simple 2D game engine, to learn so
 In the future even a 3D one perhaps, who knows !<br>
 
 For announcements, comments, questions please go [here](https://www.purebasic.fr/english/viewtopic.php?t=81764).
-
