@@ -1,4 +1,5 @@
 .hidden/
-*.tpd
+.alpha/
 *.exe
+*.tpd
 sgl/extras/Tiny3D/
