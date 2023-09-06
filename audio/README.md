@@ -20,7 +20,7 @@ The sub-repository is organized this way:
 | assets | Sound files in different formats used for testing. |
 | libsndfile | The import of the LibSndFile library. |
 | openal-soft | The import of the OpenAL Soft library. |
-| test | Short examples to demonstrates the use of the commands in practice. |
+| test | Short examples to test the library. |
 
 ### What you need to run this ?
 Just PureBasic. The only dependencies are the OpenAL Soft and LibSndFile libraries and they are included.<br>
