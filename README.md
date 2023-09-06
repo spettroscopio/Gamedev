@@ -16,4 +16,4 @@ You can find the module under the directory "audio", the binding to the OpenAl S
 The bindings can be used by themselves if you are interested in only those.<br> 
 More info [here](https://github.com/spettroscopio/gamedev/blob/main/audio/README.md).<br>
 <br>
-And various supporting code under the "inc" directory wich is shared by the main modules.<br>
+Plus various supporting code under the "inc" directory wich is shared by the main modules.<br>
