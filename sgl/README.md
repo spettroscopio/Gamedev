@@ -24,7 +24,7 @@ All the test code should work inside the IDE without the need of altering paths,
 ### What you have to do to distribute something using this ?
 The binaries of the GLFW library are under glfw/lib.<br>
 Static linking is supported only on Windows.<br>
-If you build an executable and select dinamic linking in your configuration file (sgl.pbi) or in your private copy of it, then the correct dinamic library must be copied to the same directory of the executable, or under ./lib or ./bin below that directory.<br>
+If you build an executable and select dynamic linking in your configuration file (sgl.pbi) or in your private copy of it, then the correct dinamic library must be copied to the same directory of the executable, or under ./lib or ./bin below that directory.<br>
 The initialization of the library will look there.<br>
 
 ### That's all !
