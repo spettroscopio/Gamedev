@@ -62,6 +62,8 @@ UseModule gl ; import gl namespace
 
 UseModule dbg ; import dbg namespace
 
+;- * INTERFACE *
+
 DeclareModule sgl
 
 EnableExplicit
@@ -70,7 +72,7 @@ EnableExplicit
 #SGL_MIN = 0
 #SGL_REV = 1
   
-;- CallBacks 
+;- CallBacks
   
 Prototype CallBack_Error (Source$, Desc$)
 Prototype CallBack_WindowClose (win)
@@ -206,11 +208,11 @@ Structure BitmapFontData
  fontName$ ; font name
  fontSize.i ; font size (points)
  image.i ; bitmap 32 bits
- italic.i ; 1 if italic
- bold.i ; 1 if bold
+ italic.i ; 1 = italic
+ bold.i ; 1 = bold
  yOffset.i ; how much the vertical position should be advanced after drawing a line
- block.GlyphData ; the special BLOCK charater to use for any missing glyph
- *glyphs  ; this is a binary tree filled by CreateBitmapFontData()
+ block.GlyphData ; the special BLOCK charater used for any missing glyph
+ *btGlyphs  ; this is a binary tree filled by CreateBitmapFontData()
 EndStructure
 
 Structure ShaderObjects
@@ -639,6 +641,7 @@ Declare     SetUniform4Floats (uniform, v0.f, v1.f, v2.f, v3.f) ; Pass a uniform
 
 EndDeclareModule
 
+;- * IMPLEMENTATION *
 
 Module sgl
 
@@ -663,13 +666,13 @@ EndMacro
 
 ;- Declares
 
-Declare     init_sgl_obj()
-Declare     init_window_hints()
-Declare     init_mouse()
-Declare     init_keyboard()
-Declare     apply_window_hints()
-Declare.s   shader_type_to_string (type)
-Declare     split_glsl_errors (errlog$)
+Declare     InitSglObj()
+Declare     InitWindowHints()
+Declare     InitSglMouse()
+Declare     InitSglKeyboard()
+Declare     ApplyWindowHints()
+Declare.s   ShaderTypeToString (type)
+Declare     SplitGlslErrors (errlog$)
 Declare     callback_getprocaddress (func$)
 Declare     callback_enum_opengl_funcs (glver$, func$, *func)
 DeclareC    callback_error_glfw (err, *desc)
@@ -688,12 +691,12 @@ DeclareC    callback_window_char (win, char)
 DeclareC    callback_window_cursor_position (win, x.d, y.d)
 DeclareC    callback_window_cursor_entering (win, entering)
 DeclareC    callback_window_mouse_button (win, button, action, mods)
-Declare.i   binary_lookup_string (Array arr$(1), key$)
-Declare.i   map_key_to_sgl (glfw_key)
-Declare.i   map_key_to_glfw (sgl_key)
-Declare.i   find_zero_alpha_vertically (stripX, stripHeight, stripWidth)
-Declare.i   find_some_alpha_vertically (stripX, stripHeight, stripWidth)
-Declare.i   calc_bitmapfontdata_size (fontName$, fontSize, fontFlags, Array ranges.BitmapFontRange(1), *width.Integer, *height.Integer, spacing = 0)
+Declare.i   BinaryLookupString (Array arr$(1), key$)
+Declare.i   MapKeyToSGL (glfw_key)
+Declare.i   MapKeyToGLFW (sgl_key)
+Declare.i   FindZeroAlphaVertically (stripX, stripHeight, stripWidth)
+Declare.i   FindSomeAlphaVertically (stripX, stripHeight, stripWidth)
+Declare.i   CalcBitmapFontDataSize (fontName$, fontSize, fontFlags, Array ranges.BitmapFontRange(1), *width.Integer, *height.Integer, spacing = 0)
 
 ;- Structures
   
@@ -797,11 +800,11 @@ Structure SGL_OBJ
  hintWinFrameBufferDepth.i
  hintWinFrameBufferTransparent.i
  hintWinRefreshRate.i 
-EndStructure : Global SGL.SGL_OBJ : init_sgl_obj()
+EndStructure : Global SGL.SGL_OBJ : InitSglObj()
 
 ;- * PRIVATE *
 
-Procedure init_sgl_obj() 
+Procedure InitSglObj() 
  SGL\initialized = 0 
  SGL\debugOutputLevel = 0
  
@@ -837,16 +840,16 @@ Procedure init_sgl_obj()
 
  Dim ExtensionsStrings$(0)
  
- init_window_hints()
+ InitWindowHints()
  
- init_keyboard()
+ InitSglKeyboard()
  
- init_mouse()
+ InitSglMouse()
  
  gl_load::RegisterCallBack(gl_load::#CallBack_GetProcAddress, @callback_getprocaddress())
 EndProcedure 
 
-Procedure init_window_hints()
+Procedure InitWindowHints()
  SGL\hintWinOpenglDebug = 0
  SGL\hintWinOpenglMajor = 1
  SGL\hintWinOpenglMinor = 0
@@ -870,12 +873,12 @@ Procedure init_window_hints()
  SGL\hintWinRefreshRate = #DONT_CARE
 EndProcedure
 
-Procedure init_mouse()
+Procedure InitSglMouse()
  SGL\Mouse\scrollOffsetX = 0.0
  SGL\Mouse\scrollOffsetY = 0.0
 EndProcedure
 
-Procedure init_keyboard()
+Procedure InitSglKeyboard()
  Protected i
   
  For i = 0 To #Key_LAST
@@ -1228,7 +1231,7 @@ Procedure init_keyboard()
  SGL\Keyboard\GLFW2SGL(#GLFW_KEY_MENU) = #Key_MENU
 EndProcedure
 
-Procedure apply_window_hints()
+Procedure ApplyWindowHints()
  glfwWindowHint(#GLFW_OPENGL_DEBUG_CONTEXT, SGL\hintWinOpenglDebug)
  glfwWindowHint(#GLFW_CONTEXT_VERSION_MAJOR, SGL\hintWinOpenglMajor)
  glfwWindowHint(#GLFW_CONTEXT_VERSION_MINOR, SGL\hintWinOpenglMinor)
@@ -1270,7 +1273,7 @@ Procedure apply_window_hints()
  glfwWindowHint(#GLFW_REFRESH_RATE, SGL\hintWinRefreshRate)
 EndProcedure
 
-Procedure.s shader_type_to_string (type)
+Procedure.s ShaderTypeToString (type)
  Protected type$
  
  Select type
@@ -1293,7 +1296,7 @@ Procedure.s shader_type_to_string (type)
  ProcedureReturn type$
 EndProcedure
 
-Procedure split_glsl_errors (errlog$)
+Procedure SplitGlslErrors (errlog$)
  Protected i, lines, newline$
  Dim lines$(0)
  
@@ -1311,6 +1314,176 @@ Procedure split_glsl_errors (errlog$)
     EndIf
  Next
 EndProcedure
+
+Procedure.i BinaryLookupString (Array arr$(1), key$) 
+ Protected l, m, h = ArraySize(arr$()) + 1
+ 
+ While l <= h
+    m = (l + h) / 2
+    If key$ < arr$(m)
+        h = m - 1
+    ElseIf key$ > arr$(m) 
+        l = m + 1
+    Else
+        ProcedureReturn m ; found 
+    EndIf
+ Wend
+ 
+ ProcedureReturn -1 ; not found
+EndProcedure
+
+Procedure.i MapKeyToSGL (glfw_key)
+ If glfw_key = #GLFW_KEY_UNKNOWN
+    ProcedureReturn #Key_Unknown
+ EndIf 
+ ProcedureReturn SGL\Keyboard\GLFW2SGL(glfw_key)
+EndProcedure
+
+Procedure.i MapKeyToGLFW (sgl_key)
+ If sgl_key = #Key_Unknown
+    ProcedureReturn #GLFW_KEY_UNKNOWN
+ EndIf
+ ProcedureReturn SGL\Keyboard\SGL2GLFW(sgl_key)
+EndProcedure
+
+Procedure.i FindZeroAlphaVertically (stripX, stripHeight, stripWidth) 
+ Protected stripY = 0
+ 
+ While stripX < stripWidth
+     While stripY < stripHeight
+        If Alpha(Point(stripX, stripY)) <> 0
+            If stripX < stripWidth
+                stripX + 1
+                stripY = 0
+                Continue
+            EndIf
+            ProcedureReturn stripWidth 
+        EndIf
+        stripY + 1
+     Wend          
+     ProcedureReturn stripX
+ Wend
+ 
+ ProcedureReturn stripWidth 
+EndProcedure
+
+Procedure.i FindSomeAlphaVertically (stripX, stripHeight, stripWidth) 
+ Protected stripY = 0
+ 
+ While stripX < stripWidth
+     While stripY < stripHeight
+        If Alpha(Point(stripX, stripY)) <> 0
+            ProcedureReturn stripX
+        EndIf
+        stripY + 1
+     Wend          
+     stripX + 1
+     stripY = 0
+ Wend
+ 
+ ProcedureReturn stripWidth 
+EndProcedure
+
+Procedure.i CalcBitmapFontDataSize (fontName$, fontSize, fontFlags, Array ranges.BitmapFontRange(1), *width.Integer, *height.Integer, spacing = 0)
+ Protected font, image, hdc
+ Protected x, y, gw, gh, code, char$, highestRow
+ Protected range, ranges = ArraySize(ranges())
+ Protected totPixels, calcSize
+ 
+ font = LoadFont(#PB_Any, fontName$, fontSize, fontFlags)
+ 
+ If font = 0 : Goto exit : EndIf 
+  
+ image = CreateImage(#PB_Any, 32, 32, 32, #PB_Image_Transparent)
+ 
+ If image = 0 : Goto exit : EndIf
+
+ hDC = StartDrawing(ImageOutput(image)) 
+  DrawingFont(FontID(font))
+  
+  x = 1 : y = 1
+  
+  ; BLOCK char 
+  gw = TextWidth(" ")
+  gh = TextHeight(" ")    
+  x = x + gw + spacing
+
+  For range = 0 To ranges
+    For code = ranges(range)\firstChar To ranges(range)\lastChar     
+        char$ = Chr(code)        
+        gw = TextWidth(char$)
+        gh = TextHeight(char$)            
+        If gh > y : y = gh : EndIf             
+        x = x + gw + spacing
+    Next
+  Next
+  
+  totPixels = x * y
+  
+  calcSize = Sqr(totPixels)
+  
+  If calcSize % 64 ; if not a multiple already
+    calcSize = NextMultiple(Sqr(totPixels), 64)
+  EndIf
+
+retry:
+  
+  x = 1 : y = 1
+  highestRow = 0
+
+  ; BLOCK char 
+  gw = TextWidth(" ")
+  gh = TextHeight(" ")    
+  x = x + gw + spacing
+       
+  For range = 0 To ranges
+    For code = ranges(range)\firstChar To ranges(range)\lastChar
+      
+        char$ = Chr(code)
+        
+        gw = TextWidth(char$)
+        gh = TextHeight(char$)
+        
+        If y + gh > calcSize
+            ; not enough space
+            calcSize = NextMultiple(calcSize, 64)
+            Goto retry:
+        EndIf
+    
+        If gh > highestRow
+            highestRow = gh
+        EndIf
+                    
+        If x + gw > calcSize
+            y + highestRow + spacing
+            highestRow = 0
+            x = 1
+        EndIf
+        
+        x = x + gw + spacing
+    Next
+  Next
+  
+ StopDrawing()
+   
+ FreeImage(image)
+ FreeFont(font)
+ 
+ *width\i = calcSize
+ *height\i = calcSize
+ 
+ ProcedureReturn 1
+ 
+ exit: 
+
+ If hDC : StopDrawing() : EndIf
+ If image : FreeImage(image) : EndIf
+ If font : FreeFont(font) : EndIf
+  
+ ProcedureReturn 0
+EndProcedure
+
+;- Internal CallBacks
 
 Procedure callback_getprocaddress (func$) 
  ProcedureReturn glfwGetProcAddress(func$) 
@@ -1429,7 +1602,7 @@ ProcedureC callback_window_scroll (win, x_offset.d, y_offset.d)
 EndProcedure
 
 ProcedureC callback_window_key (win, key, scancode, action, mods)
- key = map_key_to_sgl(key)
+ key = MapKeyToSGL(key)
  
  If action = #RELEASED
     SGL\Keyboard\Keys(key)\KeyPressed = 0 ; release the "sticky" status of GetKeyPress()
@@ -1473,174 +1646,6 @@ ProcedureC callback_window_mouse_button (win, button, action, mods)
  If SGL\fpCallBack_MouseButton
     SGL\fpCallBack_MouseButton(win, button, action, mods)
  EndIf 
-EndProcedure
-
-Procedure.i binary_lookup_string (Array arr$(1), key$) 
- Protected l, m, h = ArraySize(arr$()) + 1
- 
- While l <= h
-    m = (l + h) / 2
-    If key$ < arr$(m)
-        h = m - 1
-    ElseIf key$ > arr$(m) 
-        l = m + 1
-    Else
-        ProcedureReturn m ; found 
-    EndIf
- Wend
- 
- ProcedureReturn -1 ; not found
-EndProcedure
-
-Procedure.i map_key_to_sgl (glfw_key)
- If glfw_key = #GLFW_KEY_UNKNOWN
-    ProcedureReturn #Key_Unknown
- EndIf 
- ProcedureReturn SGL\Keyboard\GLFW2SGL(glfw_key)
-EndProcedure
-
-Procedure.i map_key_to_glfw (sgl_key)
- If sgl_key = #Key_Unknown
-    ProcedureReturn #GLFW_KEY_UNKNOWN
- EndIf
- ProcedureReturn SGL\Keyboard\SGL2GLFW(sgl_key)
-EndProcedure
-
-Procedure.i find_zero_alpha_vertically (stripX, stripHeight, stripWidth) 
- Protected stripY = 0
- 
- While stripX < stripWidth
-     While stripY < stripHeight
-        If Alpha(Point(stripX, stripY)) <> 0
-            If stripX < stripWidth
-                stripX + 1
-                stripY = 0
-                Continue
-            EndIf
-            ProcedureReturn stripWidth 
-        EndIf
-        stripY + 1
-     Wend          
-     ProcedureReturn stripX
- Wend
- 
- ProcedureReturn stripWidth 
-EndProcedure
-
-Procedure.i find_some_alpha_vertically (stripX, stripHeight, stripWidth) 
- Protected stripY = 0
- 
- While stripX < stripWidth
-     While stripY < stripHeight
-        If Alpha(Point(stripX, stripY)) <> 0
-            ProcedureReturn stripX
-        EndIf
-        stripY + 1
-     Wend          
-     stripX + 1
-     stripY = 0
- Wend
- 
- ProcedureReturn stripWidth 
-EndProcedure
-
-Procedure.i calc_bitmapfontdata_size (fontName$, fontSize, fontFlags, Array ranges.BitmapFontRange(1), *width.Integer, *height.Integer, spacing = 0)
- Protected font, image, hdc
- Protected x, y, gw, gh, code, char$, highestRow
- Protected range, ranges = ArraySize(ranges())
- Protected totPixels, calcSize
- 
- font = LoadFont(#PB_Any, fontName$, fontSize, fontFlags)
- 
- If font = 0 : Goto exit : EndIf 
-  
- image = CreateImage(#PB_Any, 32, 32, 32, #PB_Image_Transparent)
- 
- If image = 0 : Goto exit : EndIf
-
- hDC = StartDrawing(ImageOutput(image)) 
-  DrawingFont(FontID(font))
-  
-  x = 1 : y = 1
-  
-  ; BLOCK char 
-  gw = TextWidth(" ")
-  gh = TextHeight(" ")    
-  x = x + gw + spacing
-
-  For range = 0 To ranges
-    For code = ranges(range)\firstChar To ranges(range)\lastChar     
-        char$ = Chr(code)        
-        gw = TextWidth(char$)
-        gh = TextHeight(char$)            
-        If gh > y : y = gh : EndIf             
-        x = x + gw + spacing
-    Next
-  Next
-  
-  totPixels = x * y
-  
-  calcSize = Sqr(totPixels)
-  
-  If calcSize % 64 ; if not a multiple already
-    calcSize = NextMultiple(Sqr(totPixels), 64)
-  EndIf
-
-retry:
-  
-  x = 1 : y = 1
-  highestRow = 0
-
-  ; BLOCK char 
-  gw = TextWidth(" ")
-  gh = TextHeight(" ")    
-  x = x + gw + spacing
-       
-  For range = 0 To ranges
-    For code = ranges(range)\firstChar To ranges(range)\lastChar
-      
-        char$ = Chr(code)
-        
-        gw = TextWidth(char$)
-        gh = TextHeight(char$)
-        
-        If y + gh > calcSize
-            ; not enough space
-            calcSize = NextMultiple(calcSize, 64)
-            Goto retry:
-        EndIf
-    
-        If gh > highestRow
-            highestRow = gh
-        EndIf
-                    
-        If x + gw > calcSize
-            y + highestRow + spacing
-            highestRow = 0
-            x = 1
-        EndIf
-        
-        x = x + gw + spacing
-    Next
-  Next
-  
- StopDrawing()
-   
- FreeImage(image)
- FreeFont(font)
- 
- *width\i = calcSize
- *height\i = calcSize
- 
- ProcedureReturn 1
- 
- exit: 
-
- If hDC : StopDrawing() : EndIf
- If image : FreeImage(image) : EndIf
- If font : FreeFont(font) : EndIf
-  
- ProcedureReturn 0
 EndProcedure
 
 ;- * PUBLIC *
@@ -1697,9 +1702,9 @@ Procedure.i Init()
  
  glfwDefaultWindowHints()
   
- init_window_hints()
+ InitWindowHints()
  
- init_keyboard()
+ InitKeyboard()
  
  SGL\initialized = #True 
  
@@ -1720,7 +1725,7 @@ Procedure Shutdown()
  DestroyTimer(SGL\TrackFrameTime\timerFrame) 
  DestroyTimer(SGL\TrackFrameTime\timerFrameAccum) 
  
- init_sgl_obj()
+ InitSglObj()
 EndProcedure
 
 Procedure.s GetGlfwVersion()
@@ -2246,7 +2251,7 @@ Procedure.i IsExtensionAvailable (extension$)
 ; Please note extension$ is the extension string representing the actual extension, so you must use "GL_ARB_multitexture" 
 ; to check if the extension ARB_multitexture is supported.
 
- If binary_lookup_string(SGL\ExtensionsStrings$(), extension$) <> -1
+ If BinaryLookupString(SGL\ExtensionsStrings$(), extension$) <> -1
     ProcedureReturn 1
  EndIf
  ProcedureReturn 0
@@ -2435,7 +2440,7 @@ Procedure.s GetKeyStringLocal (key)
     Case #Key_KP_ADD, #Key_KP_DECIMAL, #Key_KP_DIVIDE, #Key_KP_ENTER, #Key_KP_EQUAL, #Key_KP_MULTIPLY, #Key_KP_NUMLOCK, #Key_KP_SUBTRACT
         key$ = GetKeyString (key)   
     Default
-        *str = glfwGetKeyName(map_key_to_glfw(key), 0)
+        *str = glfwGetKeyName(MapKeyToGLFW(key), 0)
         If *str
             key$ = PeekS(*str, -1, #PB_UTF8)
         Else 
@@ -2457,7 +2462,7 @@ Procedure.i CreateWindow (w, h, title$, mon = #Null, share = #Null)
  
  Protected win
  
- apply_window_hints()
+ ApplyWindowHints()
  
  win = glfwCreateWindow(w, h, title$, mon, share)
  
@@ -2479,7 +2484,7 @@ Procedure.i CreateWindowXY (x, y, w, h, title$, share = #Null)
  
  Protected win
  
- apply_window_hints()
+ ApplyWindowHints()
  
  glfwWindowHint(#GLFW_VISIBLE, 0)
  
@@ -2581,7 +2586,7 @@ EndProcedure
 Procedure ResetWindowHints()
 ;> Resets all the window hints to their default values.
  glfwDefaultWindowHints()
- init_window_hints()
+ InitWindowHints()
 EndProcedure
 
 Procedure ShowWindow (win, flag)
@@ -4080,7 +4085,7 @@ Procedure.i LoadBitmapFontData (file$)
         If GetXMLNodeName(node) <> "chars" : Goto exit : EndIf
         chars = Val(GetXMLNodeText(node)) 
               
-        *bmf\glyphs = sbbt::New(#PB_Integer)
+        *bmf\btGlyphs = sbbt::New(#PB_Integer)
         
         For i = 1 To chars
             node = NextXMLNode(node)
@@ -4095,7 +4100,7 @@ Procedure.i LoadBitmapFontData (file$)
             *glyph\h = Val(GetXMLAttribute(node, "h"))
             *glyph\xOffset = Val(GetXMLAttribute(node, "xoffs"))
             
-            If sbbt::Insert(*bmf\glyphs, *glyph\code, *glyph) = 0
+            If sbbt::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
                 CALLBACK_ERROR (#SOURCE_ERROR_SGL$, "LoadBitmapFontData() encountered duplicated char codes.")
                 Goto exit
             EndIf
@@ -4191,12 +4196,12 @@ Procedure.i SaveBitmapFontData (file$, *bmf.BitmapFontData)
  SetXMLNodeText(child, Str(*bmf\yOffset))
 
  child = CreateXMLNode(main, "chars") 
- SetXMLNodeText(child, Str(sbbt::Count(*bmf\glyphs)))
+ SetXMLNodeText(child, Str(sbbt::Count(*bmf\btGlyphs)))
 
- sbbt::EnumStart(*bmf\glyphs)
+ sbbt::EnumStart(*bmf\btGlyphs)
 
- While sbbt::EnumNext(*bmf\glyphs)
-    *glyph = sbbt::GetValue(*bmf\glyphs)
+ While sbbt::EnumNext(*bmf\btGlyphs)
+    *glyph = sbbt::GetValue(*bmf\btGlyphs)
     
     child = CreateXMLNode(main, "char")    
     SetXMLAttribute(child, "code", Str(*glyph\code))
@@ -4207,7 +4212,7 @@ Procedure.i SaveBitmapFontData (file$, *bmf.BitmapFontData)
     SetXMLAttribute(child, "xoffs", Str(*glyph\xOffset))
  Wend
  
- sbbt::EnumEnd(*bmf\glyphs)
+ sbbt::EnumEnd(*bmf\btGlyphs)
     
  FormatXML(xml, #PB_XML_ReFormat)
     
@@ -4266,7 +4271,7 @@ Procedure.i CreateBitmapFontData (fontName$, fontSize, fontFlags, Array ranges.B
  ASSERT ((width = 0 And height = 0) Or (width > 0 And height > 0))
  
  If width = 0 And  height = 0 ; auto-size 
-    If calc_bitmapfontdata_size (fontName$, fontSize, fontFlags, ranges(), @width, @height, spacing) = 0
+    If CalcBitmapFontDataSize (fontName$, fontSize, fontFlags, ranges(), @width, @height, spacing) = 0
         Goto exit
     EndIf
  EndIf
@@ -4311,7 +4316,7 @@ Procedure.i CreateBitmapFontData (fontName$, fontSize, fontFlags, Array ranges.B
    
   x = x + gw + spacing
 
-  *bmf\glyphs = sbbt::New(#PB_Integer)
+  *bmf\btGlyphs = sbbt::New(#PB_Integer)
     
   ; now we process the requested unicode ranges 
   
@@ -4355,7 +4360,7 @@ Procedure.i CreateBitmapFontData (fontName$, fontSize, fontFlags, Array ranges.B
         *glyph\h = gh
         *glyph\xOffset = 1
         
-        If sbbt::Insert(*bmf\glyphs, *glyph\code, *glyph) = 0
+        If sbbt::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
             CALLBACK_ERROR (#SOURCE_ERROR_SGL$, "CreateBitmapFontData() encountered duplicated char codes.")
             Goto exit
         EndIf
@@ -4456,10 +4461,10 @@ Procedure.i CreateBitmapFontDataFromStrip (file$, fontSize, width, height, spaci
     hDC = StartDrawing(ImageOutput(imgStrip))
      DrawingMode(#PB_2DDrawing_AllChannels)
   
-     stripX = find_some_alpha_vertically(stripX, stripHeight, stripWidth) 
+     stripX = FindSomeAlphaVertically(stripX, stripHeight, stripWidth) 
      stripCharStart = stripX
     
-     stripX = find_zero_alpha_vertically(stripX, stripHeight, stripWidth) 
+     stripX = FindZeroAlphaVertically(stripX, stripHeight, stripWidth) 
      stripCharEnd = stripX
  
     StopDrawing()
@@ -4506,7 +4511,7 @@ Procedure.i CreateBitmapFontDataFromStrip (file$, fontSize, width, height, spaci
    
   x = x + gw + spacing
 
-  *bmf\glyphs = sbbt::New(#PB_Integer)
+  *bmf\btGlyphs = sbbt::New(#PB_Integer)
   
   Protected code
   
@@ -4553,7 +4558,7 @@ Procedure.i CreateBitmapFontDataFromStrip (file$, fontSize, width, height, spaci
     *glyph\h = gh
     *glyph\xOffset = 2
     
-    If sbbt::Insert(*bmf\glyphs, *glyph\code, *glyph) = 0
+    If sbbt::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
         CALLBACK_ERROR (#SOURCE_ERROR_SGL$, "CreateBitmapFontDataFromStrip() encountered duplicated char codes.")
         Goto exit
     EndIf
@@ -4593,17 +4598,17 @@ Procedure DestroyBitmapFontData (*bmf.BitmapFontData)
     FreeImage(*bmf\Image)
  EndIf
 
- If *bmf\glyphs
-     sbbt::EnumStart(*bmf\glyphs)
+ If *bmf\btGlyphs
+     sbbt::EnumStart(*bmf\btGlyphs)
      
-     While sbbt::EnumNext(*bmf\glyphs)
-        *glyph = sbbt::GetValue(*bmf\glyphs)
+     While sbbt::EnumNext(*bmf\btGlyphs)
+        *glyph = sbbt::GetValue(*bmf\btGlyphs)
         FreeStructure(*glyph)
      Wend
      
-     sbbt::EnumEnd(*bmf\glyphs)
+     sbbt::EnumEnd(*bmf\btGlyphs)
     
-     sbbt::Free(*bmf\glyphs)
+     sbbt::Free(*bmf\btGlyphs)
  EndIf
       
  FreeStructure(*bmf)
@@ -4647,7 +4652,7 @@ Procedure.i CompileShader (string$, shaderType)
  glGetShaderiv_(shader, #GL_COMPILE_STATUS, @result)
  
  If result = #GL_FALSE    
-    CALLBACK_ERROR (#SOURCE_ERROR_GLSL$, "glCompileShader() error in " + shader_type_to_string(shaderType))
+    CALLBACK_ERROR (#SOURCE_ERROR_GLSL$, "glCompileShader() error in " + ShaderTypeToString(shaderType))
     
     glGetShaderiv_(shader, #GL_INFO_LOG_LENGTH, @length)
     
@@ -4656,7 +4661,7 @@ Procedure.i CompileShader (string$, shaderType)
         glGetShaderInfoLog_(shader, length, @length, *errlog)
         errlog$ = PeekS(*errlog, length, #PB_UTF8) 
         FreeMemory(*errlog)                
-        split_glsl_errors(errlog$)
+        SplitGlslErrors(errlog$)
     EndIf
     
     Goto exit:
@@ -4750,7 +4755,7 @@ CompilerIf (#PB_Compiler_Debugger = 1)
         errlog$ = PeekS(*errlog, length, #PB_UTF8)
         FreeMemory(*errlog)
         
-        split_glsl_errors(errlog$)
+        SplitGlslErrors(errlog$)
     EndIf
     
     Goto exit:
@@ -4853,10 +4858,9 @@ EndProcedure
 
 EndModule
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 448
-; FirstLine = 403
-; Folding = -------------------------------------
-; Markers = 447
+; CursorPosition = 4620
+; FirstLine = 4592
+; Markers = 449,666
 ; EnableXP
 ; EnableUser
 ; UseMainFile = examples\001 Minimal.pb

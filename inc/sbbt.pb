@@ -33,6 +33,7 @@
 ; All the keys must be UNIQUE.
 
 DeclareModule sbbt
+
 EnableExplicit
 
 #Ascending  = 0
@@ -113,7 +114,7 @@ Structure SbbtNode
  level.i
 EndStructure
 
-;- Internals
+;- * PRIVATE *
 
 Procedure.i Min (a, b)
  If a < b
@@ -548,7 +549,7 @@ Procedure.i EnumNextDescending (*t.SbbtObj)
  ProcedureReturn *t\CurrentNode
 EndProcedure
 
-;- Public
+;- * PUBLIC *
 
 Procedure.i New (type) 
 ;> Allocates a new tree, specifying the type of the key as #PB_Integer or #PB_String.
@@ -1159,8 +1160,8 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 2
-; Folding = PAA9--------
+; CursorPosition = 552
+; FirstLine = 102
 ; EnableXP
 ; EnableUser
 ; CPU = 1

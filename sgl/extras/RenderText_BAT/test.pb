@@ -222,9 +222,8 @@ Procedure Main()
 EndProcedure
 
 Main()
-; IDE Options = PureBasic 6.02 LTS (Windows - x86)
+; IDE Options = PureBasic 6.03 beta 6 LTS (Windows - x64)
 ; CursorPosition = 3
-; Folding = --
 ; Optimizer
 ; EnableXP
 ; EnableUser
@@ -232,3 +231,4 @@ Main()
 ; CPU = 1
 ; DisableDebugger
 ; CompileSourceDirectory
+; Compiler = PureBasic 6.03 beta 6 LTS - C Backend (Windows - x64)

@@ -110,7 +110,7 @@ vec4::Set(txtColor, 1.0, 1.0, 1.0, 1.0)
 Procedure.i find_glyph (*fon.BMFont, charCode)   
  Protected *glyph
  
- If sbbt::Search(*fon\bmf\glyphs, charCode, @*glyph) 
+ If sbbt::Search(*fon\bmf\btGlyphs, charCode, @*glyph) 
     ProcedureReturn *glyph ; the glyph structure for the desired char
  EndIf
  
@@ -974,8 +974,8 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 2
-; Folding = --------
+; CursorPosition = 112
+; FirstLine = 109
 ; Markers = 53,314
 ; EnableXP
 ; EnableUser

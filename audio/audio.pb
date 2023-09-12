@@ -13,6 +13,8 @@
 
 ; pause array / resume array
 ; play array
+; list of sounds playing from btSounds
+; list of sounds paused from btSounds
 ; [ok] global volume -> https://stackoverflow.com/questions/3814564/how-to-adjust-the-volume-of-a-sound-in-openal
 ; CreateBufferFromMemory()
 ; 3D sound
@@ -33,7 +35,7 @@ XIncludeFile "./libsndfile/libsndfile.load.pb"
 XIncludeFile "../inc/dbg.pb"
 XIncludeFile "../inc/str.pb"
 
-;- * PUBLIC *
+;- * INTERFACE *
 
 DeclareModule audio
 
@@ -104,9 +106,9 @@ Declare.i   GetState (sound) ; Returns the current state of the sound.
 Declare.i   GetPos (sound, format) ; Returns the current position in milliseconds or frames for the specified sound.
 Declare     SetPos (sound, position, format) ; Sets the sound current position in milliseconds or frames.
 Declare     Play (sound, loop = #False) ; Start playing the specified audio file.
-Declare     Stop (sound) ; Stop playing the specified audio file.
+Declare     Stop (sound) ; Stop the reporduction of the specified audio file.
 Declare     Pause (sound) ; Pause the reproduction of the specified audio file.
-Declare     Resume (sound) ; Resume the playing of specified sound if it was paused, else do nothing.
+Declare     Resume (sound) ; Resume the reproduction of specified sound if it was paused, else do nothing.
 Declare     SetVolume (sound, volume.f) ; Set the volume of the specified audio file (from 0.0 to 1.0)
 Declare.f   GetGlobalVolume() ; Returns the global volume (from 0.0 to 1.0)
 Declare     SetGlobalVolume (volume.f) ; Set the global volume (from 0.0 to 1.0)
@@ -114,7 +116,7 @@ Declare     SetLocation (sound, *loc.SoundLocation)
 
 EndDeclareModule
 
-;- * PRIVATE *
+;- * IMPLEMENTATION *
 
 Module audio
 
@@ -131,6 +133,7 @@ EnableExplicit
 UseModule libsndfile ; import constants and global functions 
 UseModule openal ; import constants and global functions 
 UseModule dbg
+
 
 ;- Structures
 
@@ -158,11 +161,11 @@ EndStructure
 
 ;- Declares
 
-Declare.i   lsf_check_error (sf, here$)
-Declare.i   oal_check_error (here$)
-Declare.i   oal_context_check_error (device, here$)
-Declare.i   populate_device_list (*p, Array devices$(1))
-Declare     init_audio_obj()
+Declare.i   LSF_CheckError (sf, here$)
+Declare.i   OAL_CheckError (here$)
+Declare.i   OAL_ContextCheckError (device, here$)
+Declare.i   PopulateDeviceList (*p, Array devices$(1))
+Declare     InitAudioObj()
 
 ; error callback sources
 #SOURCE_ERROR_AUDIO$        = "AUDIO"
@@ -174,12 +177,14 @@ Declare     init_audio_obj()
 #MAGIC_BUFFER = $BA51C256
 #MAGIC_CLEAR  = $00FF00FF
 
-;- OBJ
+;- AUDIO OBJ
 
 Structure AUDIO_OBJ
  initialized.i
  fpCallBack_Error.CallBack_Error 
-EndStructure : Global AUDIO.AUDIO_OBJ : init_audio_obj()
+ *btSounds
+ *btBuffers
+EndStructure : Global AUDIO.AUDIO_OBJ : InitAudioObj()
 
 Macro FRAMES_TO_MILLISECONDS (frames, samplerate)
  (1000 * frames / samplerate)
@@ -204,18 +209,20 @@ Macro CALLBACK_ERROR (source, desc, here = "")
 EndMacro
 
 Macro LSF_ERROR (sf)
- lsf_check_error (sf, HERE())
+ LSF_CheckError (sf, HERE())
 EndMacro
 
 Macro AL_ERROR()
- oal_check_error (HERE())
+ OAL_CheckError (HERE())
 EndMacro
 
 Macro ALC_ERROR (device)
- oal_context_check_error (device, HERE())
+ OAL_ContextCheckError (device, HERE())
 EndMacro
 
-Procedure.i lsf_check_error (sf, here$)
+;- * PRIVATE *
+
+Procedure.i LSF_CheckError (sf, here$)
  Protected err = sf_error(sf)
  Protected *p, err$
  
@@ -235,7 +242,7 @@ Procedure.i lsf_check_error (sf, here$)
  ProcedureReturn err
 EndProcedure
 
-Procedure.i oal_check_error (here$)
+Procedure.i OAL_CheckError (here$)
  Protected err = alGetError()
  
  If err <> #AL_NO_ERROR
@@ -256,7 +263,7 @@ Procedure.i oal_check_error (here$)
  ProcedureReturn err
 EndProcedure
 
-Procedure.i oal_context_check_error (device, here$)
+Procedure.i OAL_ContextCheckError (device, here$)
  Protected err = alcGetError(device)
  
  If err <> #ALC_NO_ERROR
@@ -277,7 +284,7 @@ Procedure.i oal_context_check_error (device, here$)
  ProcedureReturn err
 EndProcedure
 
-Procedure.i populate_device_list (*p, Array devices$(1))
+Procedure.i PopulateDeviceList (*p, Array devices$(1))
  Protected i, l, count
  
  While *p
@@ -298,9 +305,11 @@ Procedure.i populate_device_list (*p, Array devices$(1))
  ProcedureReturn count
 EndProcedure
 
-Procedure init_audio_obj() 
+Procedure InitAudioObj() 
  AUDIO\initialized = 0
  AUDIO\fpCallBack_Error = 0
+ AUDIO\btSounds = sbbt::New(#PB_Integer)
+ AUDIO\btBuffers = sbbt::New(#PB_Integer)
 EndProcedure 
 
 ;- * PUBLIC *
@@ -346,7 +355,24 @@ Procedure Shutdown()
 ;> Shutdown the library.
 ; You should always call CloseDevice() before invoking Shutdown()
 
+ Protected buffer, sound
+ 
  AUDIO\initialized = 0
+ 
+ If AUDIO\btBuffers 
+     sbbt::EnumStart(AUDIO\btBuffers)
+     
+     While sbbt::EnumNext(AUDIO\btBuffers)
+        buffer = sbbt::GetValue(AUDIO\btBuffers)
+        ; TODO delete buffer 
+     Wend
+     
+     sbbt::EnumEnd(AUDIO\btBuffers)
+    
+     sbbt::Free(AUDIO\btBuffers)
+ EndIf
+ 
+ ; TODO same for sounds
  
  libsndfile_load::Shutdown()
 
@@ -473,12 +499,12 @@ Procedure.i GetAllDevicesNames (Array devices$(1))
  If alcIsExtensionPresent(#Null, "ALC_ENUMERATE_ALL_EXT") 
     *p = alcGetString(#Null, #ALC_ALL_DEVICES_SPECIFIER)
     If *p
-        count = populate_device_list(*p, devices$())
+        count = PopulateDeviceList(*p, devices$())
     EndIf
  Else
     *p = alcGetString(#Null, #ALC_DEVICE_SPECIFIER)
     If *p
-        count = populate_device_list (*p, devices$())
+        count = PopulateDeviceList(*p, devices$())
     EndIf 
  EndIf
  
@@ -873,6 +899,11 @@ Procedure.i CreateSound()
  If AL_ERROR(): Goto exit : EndIf
 
  *s\ALSource = ALSource
+ 
+ If sbbt::Insert(AUDIO\btSounds, *s) = 0    
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the new sound handle in the BTree.")
+    Goto exit
+ EndIf
     
  ProcedureReturn *s
  
@@ -979,7 +1010,12 @@ Procedure.i CreateSoundFromBuffer (buffer)
  If AL_ERROR() : Goto exit : EndIf
  
  *s\buffer\bindings + 1
-
+ 
+ If sbbt::Insert(AUDIO\btSounds, *s) = 0    
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the new sound handle in the BTree.")
+    Goto exit
+ EndIf
+ 
  ProcedureReturn *s
  
 exit:
@@ -1324,9 +1360,8 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 33
-; Folding = ------------
-; Markers = 73,134,160
+; CursorPosition = 16
+; Markers = 75,137,163
 ; EnableXP
 ; EnableUser
 ; CPU = 1

@@ -46,7 +46,7 @@ EndStructure
 Procedure.i FindGlyph (*fon.BMFont, charCode)   
  Protected *glyph
  
- If sbbt::Search(*fon\bmf\glyphs, charCode, @*glyph) 
+ If sbbt::Search(*fon\bmf\btGlyphs, charCode, @*glyph) 
     ProcedureReturn *glyph ; the glyph structure for the desired char
  EndIf
  
@@ -193,8 +193,8 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 1
-; Folding = ---
+; CursorPosition = 48
+; FirstLine = 45
 ; EnableXP
 ; EnableUser
 ; CPU = 1
