@@ -1,6 +1,10 @@
 @SET PB="C:\Program Files\PureBasic\Compilers\pbcompiler.exe"
 @SET COMP=%PB% /check /quiet
 
+%COMP% misc/"001 Images PixelFormat.pb"
+%COMP% misc/"002 Images generation.pb"
+%COMP% misc/"003 Normals generation.pb"
+
 %COMP% demos/001/"001 Textured rotating cube (210).pb"
 %COMP% demos/002/"002 Render text and generate textures (210).pb"
 %COMP% demos/003/"003 Textured rotating cube (330).pb"
@@ -43,8 +47,8 @@
 
 %COMP% extras/"Batch/test_quads.pb"
 %COMP% extras/"Batch/test_textured_quads.pb"
-%COMP% extras/"Batch_ AT/test_quads.pb"
-%COMP% extras/"Batch_ AT/test_textured_quads.pb"
+%COMP% extras/"Batch_AT/test_quads.pb"
+%COMP% extras/"Batch_AT/test_textured_quads.pb"
 %COMP% extras/"Fonts/001 Render Unicode text.pb"
 %COMP% extras/"Fonts/002 Font viewer.pb"
 %COMP% extras/"Fonts/003 Render text using BMF files.pb"

@@ -4,7 +4,7 @@
 XIncludeFile "../../sgl.pbi"
 XIncludeFile "../../sgl.pb"
 
-XIncludeFile "../Batch_ AT/BatchRenderer.pb"
+XIncludeFile "../Batch_AT/BatchRenderer.pb"
 
 DeclareModule RenderText
 EnableExplicit
@@ -187,8 +187,7 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 38
-; FirstLine = 35
+; CursorPosition = 6
 ; EnableXP
 ; EnableUser
 ; CPU = 1

@@ -6,7 +6,7 @@ IncludeFile "../../sgl.pbi"
 IncludeFile "../../sgl.pb"
 
 ; Batch Renderer (Array Texture version)
-IncludeFile "../Batch_ AT/BatchRenderer.pb"
+IncludeFile "../Batch_AT/BatchRenderer.pb"
 
 ; Text Renderer (Batch Array Texture version)
 IncludeFile "../RenderText_BAT/RenderText.pb"
@@ -236,8 +236,7 @@ EndProcedure
 
 Main()
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 4
-; Folding = --
+; CursorPosition = 8
 ; Optimizer
 ; EnableXP
 ; EnableUser

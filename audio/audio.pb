@@ -76,22 +76,22 @@ Declare.i    GetCurrentDevice() ; Returns the handle of the playback device asso
 Declare      CloseDevice (device) ; Close the specified playback device and destroys the current context, if any.
 Declare.i    GetSoundFileInfo (file$, *sfi.SoundFileInfo) ; Retrieves some info about the specified aound file and fills the passed structure with them.
 Declare.i    CreateBufferFromMemory (bits, samplerate, channels, *data, dataSize)
-Declare.i    CreateBufferFromMemoryFile (*data, dataSize)
+Declare.i    CreateBufferFromMemoryFile (*data, dataSize) ; Creates an audio buffer from the sound file stored in memory and returns its handle.
 Declare.i    CreateBufferFromFile (file$) ; Creates an audio buffer from the sound file and returns its handle.
-Declare.i    IsBufferBound (buffer)
-Declare.i    IsSoundBound (sound)
-Declare.i    CreateSound()
+Declare.i    CreateSound() ; Create a sound and returns its handle.
 Declare.i    CreateSoundFromBuffer (buffer) ; Create a sound from the passed audio buffer and returns its handle.
-Declare.i    BindBuffer (sound, buffer) ; Bind the passed audio buffer to the source and unbinds the previously bound if any.
 Declare      DestroySound (sound) ; Destroy a sound releasing its own resources.
 Declare      DestroyBuffer (buffer) ; Destroy a buffer releasing its own resource.
+Declare.i    BindBuffer (sound, buffer) ; Bind the passed audio buffer to the source and unbinds the previously bound if any.
+Declare.i    GetBufferBindings (buffer) ; Returns the number of sound bindings currently active for the buffer.
+Declare.i    GetSoundBuffer (sound) ; Returns the handle of the associated audio buffer or 0 if none.
 Declare.i    GetAudioDataSize (sound) ; Returns the size in bytes of the audio data stored in memory for the sound.
 Declare.s    GetFormatString (sound) ; Returns the audio format string of the loaded audio file.
 Declare.s    GetSubFormatString (sound) ; Returns the sub-audio format string of the loaded audio file.
 Declare.i    GetChannels (sound) ; Returns the number of channels of the sound (1 = mono, 2 = stereo).
 Declare.i    GetSampleRate (sound) ; Returns the sample rate in Hz of the sound.
 Declare.i    GetLength (sound, format) ; Returns the length of the sound expressed in milliseconds or frames.
-Declare      SetLooping (sound, loop)
+Declare      SetLooping (sound, loop) ; Set the looping state for the specified sound.
 Declare.i    GetState (sound) ; Returns the current state of the sound.
 Declare.i    GetPos (sound, format) ; Returns the current position in milliseconds or frames for the specified sound.
 Declare      SetPos (sound, position, format) ; Sets the sound current position in milliseconds or frames.
@@ -1070,25 +1070,10 @@ exit:
 
 EndProcedure
 
-Procedure.i IsBufferBound (buffer)
-; Returns 0 if not bound to a sound, else the number of bindings currently active.
-
- Protected *b.AudioBuffer = buffer
- ASSERT (*b And *b\magic = #MAGIC_BUFFER)
- 
- ProcedureReturn *b\bindings
-EndProcedure
-
-Procedure.i IsSoundBound (sound)
-; Returns 0 if not bound to a buffer, else the handle of the buffer.
-
- Protected *s.SoundHandle = sound
- ASSERT (*s And *s\magic = #MAGIC_SOUND)
-
- ProcedureReturn *s\buffer
-EndProcedure
-
 Procedure.i CreateSound() 
+;> Create a sound and returns its handle.
+; Returns 0 in case of error.
+
  Protected *s.SoundHandle
   
  *s = AllocateStructure(SoundHandle)
@@ -1131,15 +1116,13 @@ Procedure.i CreateSoundFromBuffer (buffer)
  
  Protected *b.AudioBuffer = buffer
  ASSERT (*b And *b\magic = #MAGIC_BUFFER)
- 
- Protected *s.SoundHandle
-  
+   
  If *b = #Null Or *b\ALBuffer = 0 Or alIsBuffer(*b\ALBuffer) = #AL_FALSE
     CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The passed OpenAL buffer is invalid.", HERE())
     Goto exit
  EndIf
-    
- *s = AllocateStructure(SoundHandle)
+ 
+ Protected *s.SoundHandle = AllocateStructure(SoundHandle)
  ASSERT(*s)
  
  *s\magic = #MAGIC_SOUND
@@ -1156,7 +1139,7 @@ Procedure.i CreateSoundFromBuffer (buffer)
  If AL_ERROR(): Goto exit : EndIf
 
  *s\ALSource = ALSource
-    
+        
  ; binds the buffer to the source
  alSourcei(*s\ALSource, #AL_BUFFER, *s\buffer\ALBuffer)
  If AL_ERROR() : Goto exit : EndIf
@@ -1179,66 +1162,8 @@ exit:
  ProcedureReturn 0
 EndProcedure
 
-Procedure.i BindBuffer (sound, buffer)
-;> Bind the passed audio buffer to the source and unbinds the previously bound if any.
-; This function must be called when the sound is not playing or paused, else the binding of the new buffer will fail.
-; Returns 0 in case of error.
- 
- Protected *s.SoundHandle = sound
- ASSERT (*s And *s\magic = #MAGIC_SOUND)
- 
- Protected *b.AudioBuffer = buffer
- ASSERT_START
-  CompilerIf (#PB_Compiler_Debugger = 1)
-    If *b And *b\magic <> #MAGIC_BUFFER
-        ASSERT_FAIL()
-    EndIf
-  CompilerEndIf
- ASSERT_END
- 
- ; test if the buffer *b is valid, but a #Null buffer is also OK and pass the test
- If *b And (*b\ALBuffer = 0 Or alIsBuffer(*b\ALBuffer) = #AL_FALSE)
-    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The passed OpenAL buffer is invalid.", HERE()) 
-    Goto exit
- EndIf
- 
- Protected state
- 
- alGetSourcei(*s\ALsource, #AL_SOURCE_STATE, @state)
- If AL_ERROR(): Goto exit : EndIf
- 
- If state = #AL_PAUSED Or state = #AL_PLAYING
-    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The sound is playing or paused, can't unbind the buffer.", HERE())
-    Goto exit 
- EndIf
- 
- If *s\buffer ; if the sound has a bound buffer
-    ; unbind it
-    alSourcei(*s\ALSource, #AL_BUFFER, #AL_NONE)
-    If AL_ERROR() : Goto exit : EndIf
-    *s\buffer\bindings - 1
- EndIf
- 
- ; link the new passed buffer
- *s\buffer = *b ; it can be #Null if unbinding
-              
- If *s\buffer ; if the new buffer is not #Null
-     ; bind it
-     alSourcei(*s\ALSource, #AL_BUFFER, *s\buffer\ALBuffer)
-     If AL_ERROR() : Goto exit : EndIf     
-     *s\buffer\bindings + 1
- EndIf
- 
- ProcedureReturn 1
- 
-exit:
-
- ProcedureReturn 0
-EndProcedure
-
 Procedure DestroySound (sound)
 ;> Destroy a sound releasing its own resources.
-
 ; Note this function never destroys the associated buffer, simply decrements its bindings counter.
 
  Protected *s.SoundHandle = sound
@@ -1260,14 +1185,13 @@ Procedure DestroySound (sound)
  ; destroy the source bound to the sound
  alDeleteSources(1, @*s\ALSource)
  AL_ERROR()
-
- If SBBT::Delete(AUDIO\btSounds, *s) = 0
-    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "Error deleting the sound handle from the BTree.", HERE())
- EndIf    
  
  ; destroy the sound object 
  FreeStructure(*s)
 
+ If SBBT::Delete(AUDIO\btSounds, *s) = 0
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "Error deleting the sound handle from the BTree.", HERE())
+ EndIf
 EndProcedure
 
 Procedure DestroyBuffer (buffer)
@@ -1298,6 +1222,88 @@ Procedure DestroyBuffer (buffer)
     CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "Some instances of the buffer are still bound.", HERE())
  EndIf  
 EndProcedure
+
+Procedure.i BindBuffer (sound, buffer)
+;> Bind the passed audio buffer to the source and unbinds the previously bound if any.
+; This function must be called when the sound is not playing or paused, else the binding of the new buffer will fail.
+; Returns 0 in case of error.
+ 
+ Protected *s.SoundHandle = sound
+ ASSERT (*s And *s\magic = #MAGIC_SOUND)
+ 
+ Protected *b.AudioBuffer = buffer
+ ASSERT(*b And *b\magic = #MAGIC_BUFFER)
+ 
+; FIXME          
+
+;  ASSERT_START
+;   CompilerIf (#PB_Compiler_Debugger = 1)
+;     If *b And *b\magic <> #MAGIC_BUFFER
+;         ASSERT_FAIL()
+;     EndIf
+;   CompilerEndIf
+;  ASSERT_END
+ 
+ ; test if the buffer *b is valid, but a #Null buffer is also OK and pass the test
+ If *b And (*b\ALBuffer = 0 Or alIsBuffer(*b\ALBuffer) = #AL_FALSE)
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The passed OpenAL buffer is invalid.", HERE()) 
+    Goto exit
+ EndIf
+ 
+ Protected state
+ 
+ alGetSourcei(*s\ALsource, #AL_SOURCE_STATE, @state)
+ If AL_ERROR(): Goto exit : EndIf
+ 
+ If state = #AL_PAUSED Or state = #AL_PLAYING
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The sound is playing or paused, can't unbind the buffer.", HERE())
+    Goto exit 
+ EndIf
+ 
+ If *s\buffer ; if the sound has a bound buffer
+    ; unbind it
+    alSourcei(*s\ALSource, #AL_BUFFER, #AL_NONE)
+    If AL_ERROR() : Goto exit : EndIf
+    
+    *s\buffer\bindings - 1
+ EndIf
+ 
+ ; link the new passed buffer
+ *s\buffer = *b ; it can be #Null if unbinding
+              
+ If *s\buffer ; if the new buffer is not #Null
+     ; bind it
+     alSourcei(*s\ALSource, #AL_BUFFER, *s\buffer\ALBuffer)
+     If AL_ERROR() : Goto exit : EndIf     
+    
+     *s\buffer\bindings + 1
+ EndIf
+ 
+ ProcedureReturn 1
+ 
+exit:
+
+ ProcedureReturn 0
+EndProcedure
+
+Procedure.i GetBufferBindings (buffer)
+;> Returns the number of sound bindings currently active for the buffer.
+
+ Protected *b.AudioBuffer = buffer
+ ASSERT (*b And *b\magic = #MAGIC_BUFFER)
+ 
+ ProcedureReturn *b\bindings
+EndProcedure
+
+Procedure.i GetSoundBuffer (sound)
+;> Returns the handle of the associated audio buffer or 0 if none.
+
+ Protected *s.SoundHandle = sound
+ ASSERT (*s And *s\magic = #MAGIC_SOUND)
+
+ ProcedureReturn *s\buffer
+EndProcedure
+
 
 Procedure.i GetAudioDataSize (sound)
 ;> Returns the size in bytes of the audio data stored in memory for the sound.
@@ -1370,7 +1376,7 @@ Procedure.i GetLength (sound, format)
 EndProcedure
 
 Procedure SetLooping (sound, loop)
-; Set the looping state for the specified sound.
+;> Set the looping state for the specified sound.
 
 ; loop should be set to 0 or 1
 
@@ -1768,7 +1774,8 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 32
+; CursorPosition = 111
+; FirstLine = 63
 ; Markers = 64
 ; EnableXP
 ; EnableUser

@@ -12,7 +12,7 @@
 ;
 ; https://www.purebasic.fr/english/viewtopic.php?t=81764
 ;
-; 1.01, Sep 06 2023, PB 6.02
+; 1.01, Oct 03 2023, PB 6.02
 ; Merged with other stuff under a single "gamedev" umbrella to share the parts in common.
 ;
 ; 1.00, Jun 03 2023, PB 6.02
@@ -4858,8 +4858,7 @@ EndProcedure
 
 EndModule
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 3977
-; FirstLine = 3967
+; CursorPosition = 20
 ; Markers = 448,666
 ; EnableXP
 ; EnableUser

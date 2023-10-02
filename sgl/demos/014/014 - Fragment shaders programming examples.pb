@@ -10,7 +10,7 @@ IncludeFile "../../extras/RenderText/RenderText.pb"
 
 UseModule gl
 
-#TITLE$ = "Drawing with fragment shaders 3.30 - Press [ENTER]"
+#TITLE$ = "Drawing with fragment shaders 3.30"
 #WIN_WIDTH = 1024
 #WIN_HEIGHT = 768
 #VSYNC = 1
@@ -238,7 +238,7 @@ Procedure Render()
   
  ; bottom
  x = 1 : y = h - RenderText::GetFontHeight(gFon)  
- RenderText::Render(gWin, gFon, gShadersList(), x, y, color) 
+ RenderText::Render(gWin, gFon, "[RETURN] - " + gShadersList(), x, y, color) 
 
  sgl::SwapBuffers(gWin)
 EndProcedure
@@ -276,9 +276,8 @@ Procedure Main()
 EndProcedure : Main()
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 4
-; FirstLine = 1
-; Folding = --
+; CursorPosition = 240
+; FirstLine = 214
 ; EnableXP
 ; EnableUser
 ; Executable = 001\001.exe

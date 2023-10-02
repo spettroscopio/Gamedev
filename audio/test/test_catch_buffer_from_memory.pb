@@ -82,8 +82,8 @@ If audio::Init()
     audio::Shutdown()
 EndIf
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 6
-; FirstLine = 2
+; CursorPosition = 47
+; FirstLine = 6
 ; EnableXP
 ; EnableUser
 ; CPU = 1

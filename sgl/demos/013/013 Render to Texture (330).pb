@@ -12,7 +12,7 @@ IncludeFile "../../sgl.pb"
 
 
 ; Batch Renderer (Array Texture version)
-IncludeFile "../../extras/Batch_ AT/BatchRenderer.pb"
+IncludeFile "../../extras/Batch_AT/BatchRenderer.pb"
 
 ; Text Renderer (Batch Array Texture version)
 IncludeFile "../../extras/RenderText_BAT/RenderText.pb"
@@ -653,9 +653,7 @@ EndProcedure
 Main()
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 8
-; FirstLine = 5
-; Folding = ---
+; CursorPosition = 14
 ; EnableXP
 ; EnableUser
 ; Executable = C:\Users\luis\Desktop\Share\sgl\013\013.exe

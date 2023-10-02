@@ -5,7 +5,7 @@ XIncludeFile "../../sgl.pbi"
 XIncludeFile "../../sgl.pb"
 
 ; Batch Renderer (Array Texture version)
-XIncludeFile "../Batch_ AT/BatchRenderer.pb"
+XIncludeFile "../Batch_AT/BatchRenderer.pb"
 
 DeclareModule imgui
 EnableExplicit
@@ -974,8 +974,7 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 112
-; FirstLine = 109
+; CursorPosition = 7
 ; Markers = 53,314
 ; EnableXP
 ; EnableUser
