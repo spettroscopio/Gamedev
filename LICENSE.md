@@ -11,6 +11,9 @@ Altered source versions must be plainly marked as such, and must not be misrepre
 
 This notice may not be removed or altered from any source distribution.<br>
 
+GLFW which is released under the the zlib/libpng license.<br>
+https://www.glfw.org/license<br>
+
 OpenAL Soft is released under the GNU Lesser General Public License version 2.<br>
 https://openal-soft.org/<br>
 
