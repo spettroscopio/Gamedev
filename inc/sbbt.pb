@@ -1,8 +1,11 @@
 ﻿; *********************************************************************************************************************
-; sbbt.pb
+; SBBT.pb
 ; by luis
 ;
 ; Implementation of a Self-Balancing Binary Tree.
+;
+; 1.21 Sep 21 2023, PB 6.02
+; Renamed GetTop*() to GetParent*()
 ;
 ; 1.20, May 06 2023, PB 6.01
 ; Reworked, added the ability to have an integer or a string as the key, added some new functions.
@@ -16,8 +19,8 @@
 
 ; A self-balancing binary tree based on the AA-Tree data structure as defined by Arne Andersson.
 ; http://en.wikipedia.org/wiki/AA_tree
-; A self-balancing tree keeps its height to the minimum, so its lookup operations are faster and it does not degenerate into a list 
-; in case it has been fed with a sorted input.
+; A self-balancing tree keeps its height to a minimum, so its lookup operations are faster and it does not degenerate into a list 
+; in case it has been fed with a sorted input like it happens with a normal binary tree.
 
 ; Insertions and deletions are costly operations compared to other data structures, anyway it has some advantages:
 
@@ -32,7 +35,7 @@
 ; You can use that value to store a pointer to a complex data structure, or use it as a counter or anything else.
 ; All the keys must be UNIQUE.
 
-DeclareModule sbbt
+DeclareModule SBBT
 
 EnableExplicit
 
@@ -53,11 +56,11 @@ Declare.i   Insert (t, key, value = 0) ; Inserts a new node in the tree (if not 
 Declare.i   InsertStr (t, key$, value = 0) ; Inserts a new node in the tree (if not already present) with key$ and optionally assigning a value to it.
 Declare.i   Search (t, key, *value = 0) ; Search for an item in the tree using key and optionally copies its associated value to the pointed integer *value.
 Declare.i   SearchStr (t, key$, *value = 0) ; Search for an item in the tree using key$ and optionally copies its associated value to the pointed integer *value.
-Declare.i   Delete (t, key, *value = 0) ; Delete the node indexed by key from the tree and optionally copies its integer value to the pointed integer *value.
-Declare.i   DeleteStr (t, key$, *value = 0) ; Delete the node indexed by key$ from the tree and optionally copies its integer value to the pointed integer *value.
+Declare.i   Delete (t, key, *value = 0) ; Delete the node indexed by key from the tree and optionally saves its integer value to the pointed integer *value.
+Declare.i   DeleteStr (t, key$, *value = 0) ; Delete the node indexed by key$ from the tree and optionally saves its integer value to the pointed integer *value.
 Declare.i   GetRoot (t) ; Returns the root node of the specified tree.
 Declare.i   GetCurrent (t) ; Returns 0 if there is no current node, else the address of the node.
-Declare.i   GetKeyType (t) ; Returns the key type of the tree.
+Declare.i   GetKeyType (t) ; Returns the key type of the tree (#PB_Integer or #PB_String).
 Declare.i   GetKey (t) ; Returns the key of the current node.
 Declare.s   GetKeyStr (t) ; Returns the key of the current node.
 Declare.i   GetKeyOf (t, n) ; Returns the key of the specified node.
@@ -78,10 +81,10 @@ Declare     DecValue (t) ; Decrements the value associated with the current node
 Declare     DecValueOf (t, n) ; Decrements the value associated with the specified node.
 Declare.i   GetLeft (t) ; Returns the node to the left of the current node.
 Declare.i   GetRight (t) ; Returns the node to the right of the current node.
-Declare.i   GetTop (t) ; Returns the address of the parent of the current node, or 0 if there is no such node.
+Declare.i   GetParent (t) ; Returns the address of the parent of the current node, or 0 if there is no such node.
 Declare.i   GetLeftOf (t, n) ; Returns the address of the node to the left of the specified node, or 0 if there is no such node.
 Declare.i   GetRightOf (t, n) ; Returns the address of the node to the right of the specified node, or 0 if there is no such node.
-Declare.i   GetTopOf (t, n) ; Returns the address of the parent of the specified node, 0 if there is no such node.
+Declare.i   GetParentOf (t, n) ; Returns the address of the parent of the specified node, 0 if there is no such node.
 Declare.i   GetFirst (t) ; Returns the address of the node with the lowest key, or 0 if there are no nodes.
 Declare.i   GetLast (t) ; Returns the address of the node with the highest key, or 0 if there are no nodes.
 Declare.i   GoFirst (t) ; Jumps to the node with the lowest key and makes it the current node.
@@ -91,7 +94,7 @@ Declare.i   GoPrev (t) ; Moves  to the previous node with a key immediately smal
 
 EndDeclareModule
 
-Module sbbt
+Module SBBT
  
 Structure SbbtObj
  *root.SbbtNode
@@ -778,7 +781,7 @@ Procedure.i SearchStr (t, key$, *value = 0)
 EndProcedure
 
 Procedure.i Delete (t, key, *value = 0)   
-;> Delete the node indexed by key from the tree and optionally copies its integer value to the pointed integer *value.
+;> Delete the node indexed by key from the tree and optionally saves its integer value to the pointed integer *value.
 
 ; Returns 1 if the item has been deleted, else 0.
 ; The current node is undefined after calling this. 
@@ -806,7 +809,7 @@ Procedure.i Delete (t, key, *value = 0)
 EndProcedure
 
 Procedure.i DeleteStr (t, key$, *value = 0)   
-;> Delete the node indexed by key$ from the tree and optionally copies its integer value to the pointed integer *value.
+;> Delete the node indexed by key$ from the tree and optionally saves its integer value to the pointed integer *value.
 
 ; Returns 1 if the item has been deleted, else 0.
 ; The current node is undefined after calling this. 
@@ -854,7 +857,7 @@ Procedure.i GetCurrent (t)
 EndProcedure
 
 Procedure.i GetKeyType (t)
-;> Returns the key type of the tree.
+;> Returns the key type of the tree (#PB_Integer or #PB_String).
 
  Protected *t.SbbtObj = t
  ProcedureReturn *t\KeyType
@@ -1043,7 +1046,7 @@ Procedure.i GetRight (t)
  ProcedureReturn *t\CurrentNode\right
 EndProcedure
 
-Procedure.i GetTop (t)
+Procedure.i GetParent (t)
 ;> Returns the address of the parent of the current node, or 0 if there is no such node.
 
  Protected *t.SbbtObj = t
@@ -1066,7 +1069,7 @@ Procedure.i GetRightOf (t, n)
  ProcedureReturn *n\right
 EndProcedure
 
-Procedure.i GetTopOf (t, n)
+Procedure.i GetParentOf (t, n)
 ;> Returns the address of the parent of the specified node, 0 if there is no such node.
 
  Protected *t.SbbtObj = t
@@ -1160,8 +1163,8 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 552
-; FirstLine = 102
+; CursorPosition = 24
+; FirstLine = 1
 ; EnableXP
 ; EnableUser
 ; CPU = 1

@@ -46,7 +46,7 @@ EndStructure
 Procedure.i FindGlyph (*fon.BMFont, charCode)   
  Protected *glyph
  
- If sbbt::Search(*fon\bmf\btGlyphs, charCode, @*glyph) 
+ If SBBT::Search(*fon\bmf\btGlyphs, charCode, @*glyph) 
     ProcedureReturn *glyph ; the glyph structure for the desired char
  EndIf
  

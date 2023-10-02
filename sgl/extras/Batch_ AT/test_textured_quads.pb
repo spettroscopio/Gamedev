@@ -160,6 +160,7 @@ Procedure Startup()
 EndProcedure
 
 Procedure ShutDown() 
+ ; also release textures in a real program   
  RenderText::DestroyBitmapFont(gFon1) 
  sgl::DestroyTimer(gTimer)
  sgl::Shutdown()
@@ -335,9 +336,8 @@ EndProcedure
 
 Main()
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 5
-; FirstLine = 1
-; Folding = --
+; CursorPosition = 162
+; FirstLine = 144
 ; Optimizer
 ; EnableXP
 ; EnableUser

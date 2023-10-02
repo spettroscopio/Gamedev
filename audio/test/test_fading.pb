@@ -7,39 +7,40 @@ Procedure CallBack_Error (source$, desc$)
 EndProcedure
 
 
-Procedure test08 (sound)
+Procedure test (sound)
  Debug ""   
  Debug "Plays the sound looped, while rising and lowering the volume"
  Delay(1000)
 
- Protected time, delta, timerPrint, timerVolume
- Protected volume.f, inc.f
+ Protected time, delta, timerVolume, timerInterval = 250 ; ms
+ Protected volume.f
 
- Protected length = audio::GetLength(sound, audio::#Milliseconds) * 3
+ Protected length = audio::GetLength(sound, audio::#Milliseconds) * 3 ; three loops
+ Protected inc.f  = 4.0 / (length / timerInterval) ; rise + fall + rise + fall
 
+ audio::SetVolume(sound, 0.0)
  audio::Play(sound, #True)
-
- timerPrint = ElapsedMilliseconds()
- timerVolume = timerPrint
-
+ 
+ time = ElapsedMilliseconds()
+ timerVolume = time
+ 
  While delta < length                 
-    If ElapsedMilliseconds() - timerVolume  >= 100 ; ms
-        timerVolume = ElapsedMilliseconds() 
-        inc + 0.01
-        If inc > 1.0
-            inc = 0.0
+    If ElapsedMilliseconds() - timerVolume  >= timerInterval
+        timerVolume = ElapsedMilliseconds()         
+        volume + inc
+        If volume > 1.0 
+            inc = -inc
+            volume = 1.0
         EndIf
-        volume = inc
-        Debug volume
-        ;volume = inc
+        If volume < 0.0 
+            inc = -inc
+            volume = 0.0
+        EndIf
+        
+        Debug "vol = " + StrF(volume, 3)
         audio::SetVolume(sound, volume)
     EndIf
-    
-    If ElapsedMilliseconds() - timerPrint  >= 100 ; ms
-        timerPrint = ElapsedMilliseconds() 
-        ;Debug StrF(volume,2)
-    EndIf
-    
+        
     delta = ElapsedMilliseconds() - time
  Wend
  
@@ -81,12 +82,13 @@ Procedure Main()
         Debug "Audio data (bytes) : " + audio::GetAudioDataSize(sound)
         Debug "State              : " + audio::GetState(sound)
         
-        test08(sound)
+        test(sound)
     
     EndIf
  EndIf
 
- If sound  : audio::DestroySound(sound)   : EndIf 
+ If sound  : audio::DestroySound(sound)   : EndIf
+ 
  If buffer : audio::DestroyBuffer(buffer) : EndIf 
 
  audio::CloseDevice(device)
@@ -99,9 +101,7 @@ If audio::Init()
     audio::Shutdown()
 EndIf
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 33
-; FirstLine = 6
-; Folding = -
+; CursorPosition = 14
 ; EnableXP
 ; EnableUser
 ; CPU = 1

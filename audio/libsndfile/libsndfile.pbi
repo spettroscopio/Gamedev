@@ -371,7 +371,7 @@ Structure SF_INSTRUMENT Align #PB_Structure_AlignC
  loops.SF_INSTRUMENT_LOOP[16]
 EndStructure
 
-; Struct used To retrieve loop information from a file
+; Struct used to retrieve loop information from a file
 
 Structure SF_LOOP_INFO Align #PB_Structure_AlignC 
   time_sig_num.w
@@ -395,8 +395,6 @@ Structure SF_CHUNK_INFO Align #PB_Structure_AlignC
  *dataptr  ; Pointer to the data
 EndStructure
 
-; this SF_VIRTUAL_IO thing should be tested, not 100% sure is correct 
-
 PrototypeC.q    sf_vio_get_filelen (*user_data)
 PrototypeC.q    sf_vio_seek (offset.q, whence, *user_data)
 PrototypeC.q    sf_vio_read (*ptr, count.q, *user_data)
@@ -404,11 +402,11 @@ PrototypeC.q    sf_vio_write (*ptr, count.q, *user_data)
 PrototypeC.q    sf_vio_tell (*user_data)
 
 Structure SF_VIRTUAL_IO
- proc_get_filelen.sf_vio_get_filelen
- proc_seek.sf_vio_seek
- proc_read.sf_vio_read
- proc_write.sf_vio_write
- proc_tell.sf_vio_tell
+ cb_get_filelen.sf_vio_get_filelen
+ cb_seek.sf_vio_seek
+ cb_read.sf_vio_read
+ cb_write.sf_vio_write
+ cb_tell.sf_vio_tell
 EndStructure
 
 PrototypeC.i sf_open (path.p-utf8, mode, *sfinfo) : Global sf_open.sf_open
@@ -462,10 +460,10 @@ EndDeclareModule
 Module libsndfile
  ; NOP
 EndModule
-; IDE Options = PureBasic 6.02 LTS (Windows - x64)
-; CursorPosition = 7
-; Folding = ---
-; Markers = 424
+; IDE Options = PureBasic 6.02 LTS (Windows - x86)
+; CursorPosition = 373
+; FirstLine = 370
+; Markers = 422
 ; EnableXP
 ; EnableUser
 ; CPU = 1

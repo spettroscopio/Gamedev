@@ -41,7 +41,7 @@ XIncludeFile "../inc/std.pb"
 XIncludeFile "../inc/str.pb"
 XIncludeFile "../inc/sys.pb"
 XIncludeFile "../inc/math.pb"
-XIncludeFile "../inc/sbbt.pb"
+XIncludeFile "../inc/SBBT.pb"
 
 ; Vectors, Matrices, Quaternions 
 XIncludeFile "../inc/vec2.pb"
@@ -58,9 +58,8 @@ XIncludeFile "glfw/glfw.load.pb"
 XIncludeFile "gl/gl.pbi"
 XIncludeFile "gl/gl.load.pb"
 
-UseModule gl ; import gl namespace
-
-UseModule dbg ; import dbg namespace
+UseModule dbg ; import namespace
+UseModule gl ; import namespace
 
 ;- * INTERFACE *
 
@@ -649,9 +648,10 @@ UseModule gl ; import gl namespace
 
 UseModule glfw ; import glfw namespace
 
-UseModule DBG ; import dbg namespace
+UseModule dbg ; import glfw namespace
 
-XIncludeFile "./extensions/ARB_debug_output.pb" ; for modern debug support
+; for modern debug support
+XIncludeFile "./extensions/ARB_debug_output.pb" 
 
 Macro CALLBACK_ERROR (source, desc)
  If SGL\fpCallBack_Error : SGL\fpCallBack_Error(source, desc) : EndIf 
@@ -3974,7 +3974,7 @@ Procedure.i LoadBitmapFontData (file$)
 ; See SaveBitmapFontData()
 
 ; file$ is the filename of the font file, if no extension is specified .zip is used.
-; example: "C:\bitmapped\arial-10" will result in "arial-10.zip"
+; example: "C:\bitmapped\arial-10" will result in "C:\bitmapped\arial-10.zip"
 
  Protected *bmf.BitmapFontData
  Protected *glyph.GlyphData
@@ -3984,9 +3984,9 @@ Procedure.i LoadBitmapFontData (file$)
  Protected versionToken, chars, i
  Protected xml, main, node
      
+ pathOnly$ = GetPathPart(file$)
  baseName$ = GetFilePart(file$, #PB_FileSystem_NoExtension)
  extension$ = GetExtensionPart(file$) 
- pathOnly$ = GetPathPart(file$)
  
  If extension$ = #Empty$
     extension$ = "zip"
@@ -4085,7 +4085,7 @@ Procedure.i LoadBitmapFontData (file$)
         If GetXMLNodeName(node) <> "chars" : Goto exit : EndIf
         chars = Val(GetXMLNodeText(node)) 
               
-        *bmf\btGlyphs = sbbt::New(#PB_Integer)
+        *bmf\btGlyphs = SBBT::New(#PB_Integer)
         
         For i = 1 To chars
             node = NextXMLNode(node)
@@ -4100,7 +4100,7 @@ Procedure.i LoadBitmapFontData (file$)
             *glyph\h = Val(GetXMLAttribute(node, "h"))
             *glyph\xOffset = Val(GetXMLAttribute(node, "xoffs"))
             
-            If sbbt::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
+            If SBBT::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
                 CALLBACK_ERROR (#SOURCE_ERROR_SGL$, "LoadBitmapFontData() encountered duplicated char codes.")
                 Goto exit
             EndIf
@@ -4196,12 +4196,12 @@ Procedure.i SaveBitmapFontData (file$, *bmf.BitmapFontData)
  SetXMLNodeText(child, Str(*bmf\yOffset))
 
  child = CreateXMLNode(main, "chars") 
- SetXMLNodeText(child, Str(sbbt::Count(*bmf\btGlyphs)))
+ SetXMLNodeText(child, Str(SBBT::Count(*bmf\btGlyphs)))
 
- sbbt::EnumStart(*bmf\btGlyphs)
+ SBBT::EnumStart(*bmf\btGlyphs)
 
- While sbbt::EnumNext(*bmf\btGlyphs)
-    *glyph = sbbt::GetValue(*bmf\btGlyphs)
+ While SBBT::EnumNext(*bmf\btGlyphs)
+    *glyph = SBBT::GetValue(*bmf\btGlyphs)
     
     child = CreateXMLNode(main, "char")    
     SetXMLAttribute(child, "code", Str(*glyph\code))
@@ -4212,7 +4212,7 @@ Procedure.i SaveBitmapFontData (file$, *bmf.BitmapFontData)
     SetXMLAttribute(child, "xoffs", Str(*glyph\xOffset))
  Wend
  
- sbbt::EnumEnd(*bmf\btGlyphs)
+ SBBT::EnumEnd(*bmf\btGlyphs)
     
  FormatXML(xml, #PB_XML_ReFormat)
     
@@ -4316,7 +4316,7 @@ Procedure.i CreateBitmapFontData (fontName$, fontSize, fontFlags, Array ranges.B
    
   x = x + gw + spacing
 
-  *bmf\btGlyphs = sbbt::New(#PB_Integer)
+  *bmf\btGlyphs = SBBT::New(#PB_Integer)
     
   ; now we process the requested unicode ranges 
   
@@ -4360,7 +4360,7 @@ Procedure.i CreateBitmapFontData (fontName$, fontSize, fontFlags, Array ranges.B
         *glyph\h = gh
         *glyph\xOffset = 1
         
-        If sbbt::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
+        If SBBT::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
             CALLBACK_ERROR (#SOURCE_ERROR_SGL$, "CreateBitmapFontData() encountered duplicated char codes.")
             Goto exit
         EndIf
@@ -4511,7 +4511,7 @@ Procedure.i CreateBitmapFontDataFromStrip (file$, fontSize, width, height, spaci
    
   x = x + gw + spacing
 
-  *bmf\btGlyphs = sbbt::New(#PB_Integer)
+  *bmf\btGlyphs = SBBT::New(#PB_Integer)
   
   Protected code
   
@@ -4558,7 +4558,7 @@ Procedure.i CreateBitmapFontDataFromStrip (file$, fontSize, width, height, spaci
     *glyph\h = gh
     *glyph\xOffset = 2
     
-    If sbbt::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
+    If SBBT::Insert(*bmf\btGlyphs, *glyph\code, *glyph) = 0
         CALLBACK_ERROR (#SOURCE_ERROR_SGL$, "CreateBitmapFontDataFromStrip() encountered duplicated char codes.")
         Goto exit
     EndIf
@@ -4599,16 +4599,16 @@ Procedure DestroyBitmapFontData (*bmf.BitmapFontData)
  EndIf
 
  If *bmf\btGlyphs
-     sbbt::EnumStart(*bmf\btGlyphs)
+     SBBT::EnumStart(*bmf\btGlyphs)
      
-     While sbbt::EnumNext(*bmf\btGlyphs)
-        *glyph = sbbt::GetValue(*bmf\btGlyphs)
+     While SBBT::EnumNext(*bmf\btGlyphs)
+        *glyph = SBBT::GetValue(*bmf\btGlyphs)
         FreeStructure(*glyph)
      Wend
      
-     sbbt::EnumEnd(*bmf\btGlyphs)
+     SBBT::EnumEnd(*bmf\btGlyphs)
     
-     sbbt::Free(*bmf\btGlyphs)
+     SBBT::Free(*bmf\btGlyphs)
  EndIf
       
  FreeStructure(*bmf)
@@ -4858,9 +4858,9 @@ EndProcedure
 
 EndModule
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 4620
-; FirstLine = 4592
-; Markers = 449,666
+; CursorPosition = 3977
+; FirstLine = 3967
+; Markers = 448,666
 ; EnableXP
 ; EnableUser
 ; UseMainFile = examples\001 Minimal.pb

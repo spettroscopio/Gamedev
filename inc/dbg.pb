@@ -2,7 +2,7 @@
 ; dbg.pb
 ; by Luis
 ;
-; The module namespace *MUST* be imported with "Usemodule dbg".
+; The module namespace * MUST * be imported with "Usemodule dbg".
 ;
 ; Varius stuff useful for debugging.
 ;
@@ -126,19 +126,21 @@ CompilerEndIf
 EndMacro
 
 CompilerIf (#PB_Compiler_Debugger = 1)
-Declare   _DBG_TEXT (Text$, Interval, FileName$, LineNum)
-Declare   _DBG_ASSERT (FileName$, LineNum)
+ Declare   _DBG_TEXT (Text$, Interval, FileName$, LineNum)
+ Declare   _DBG_ASSERT (FileName$, LineNum)
 CompilerEndIf
 
 EndDeclareModule
 
 Module dbg
 
+EnableExplicit
+
 ;- INTERNALS
 
 CompilerIf (#PB_Compiler_Debugger = 1)
 
-Structure _DBG_OBJ
+Structure DBG_OBJ
  Map LastMsgTime.i()
  InsideIDE.i
  LogFileTried.i
@@ -146,13 +148,13 @@ Structure _DBG_OBJ
  LogFileName$
 EndStructure
 
-Global _DBG._DBG_OBJ
+Global DBG.DBG_OBJ
  
 If FindString(GetFilePart(ProgramFilename()),"PureBasic_Compilation", 1, #PB_String_NoCase)
-    _DBG\InsideIDE = 1
+    DBG\InsideIDE = 1
 EndIf
  
-_DBG\LogFileTried = #False
+DBG\LogFileTried = #False
 
 Procedure _DBG_TEXT (Text$, Interval, FileName$, LineNum) 
  Protected t$, key$
@@ -161,8 +163,8 @@ Procedure _DBG_TEXT (Text$, Interval, FileName$, LineNum)
  
  key$ = FileName$ + "_" + Str(LineNum)
       
- If FindMapElement(_DBG\LastMsgTime(), key$) <> 0 ; not the first time on this source + line
-    diffTime = currTime - _DBG\LastMsgTime()
+ If FindMapElement(DBG\LastMsgTime(), key$) <> 0 ; not the first time on this source + line
+    diffTime = currTime - DBG\LastMsgTime()
         
     If Interval = -1 ; Only once
         shouldPrint = #False
@@ -172,28 +174,27 @@ Procedure _DBG_TEXT (Text$, Interval, FileName$, LineNum)
  EndIf
     
  If shouldPrint
-    If _DBG\InsideIDE 
+    If DBG\InsideIDE 
         FileName$ = GetFilePart(FileName$) ; if inside the IDE the full path is not shown ...
     EndIf
     
-    ;t$ = Text$ + " on " + Chr(34) + FileName$ + Chr(34) + " line " + Str(LineNum)
-    t$ = Text$ + " [" + FileName$ + ", " + Str(LineNum) + "]"
+    t$ = Text$ + " on " + Chr(34) + FileName$ + Chr(34) + " line " + Str(LineNum)
     
     Debug t$ ; do not delete this, it's also for the console of the stand alone exe + debugger
     
-    If _DBG\InsideIDE = #False
-        If _DBG\LogFileTried = #False ; first time we create the debugfile
-            _DBG\LogFileTried = #True
-            _DBG\LogFileName$ = GetPathPart(ProgramFilename()) + GetFilePart(ProgramFilename(), #PB_FileSystem_NoExtension) + ".debug.txt"
-            _DBG\LogFileHandle = OpenFile(#PB_Any, _DBG\LogFileName$, #PB_File_NoBuffering)
+    If DBG\InsideIDE = #False
+        If DBG\LogFileTried = #False ; first time we create the debugfile
+            DBG\LogFileTried = #True
+            DBG\LogFileName$ = GetPathPart(ProgramFilename()) + GetFilePart(ProgramFilename(), #PB_FileSystem_NoExtension) + ".debug.txt"
+            DBG\LogFileHandle = OpenFile(#PB_Any, DBG\LogFileName$, #PB_File_NoBuffering)
         EndIf
-        If IsFile(_DBG\LogFileHandle)
+        If IsFile(DBG\LogFileHandle)
             now = Date()
             t$ = FormatDate("[%dd-%mm-%yyyy] ", now) + FormatDate("[%hh:%ii:%ss] ", now) + t$            
-            WriteStringN(_DBG\LogFileHandle, t$) 
+            WriteStringN(DBG\LogFileHandle, t$) 
         EndIf
     EndIf 
-   _DBG\LastMsgTime(key$) = currTime            
+   DBG\LastMsgTime(key$) = currTime            
  EndIf
 EndProcedure
 
@@ -202,9 +203,9 @@ Procedure _DBG_ASSERT (FileName$, LineNum)
  
  _DBG_TEXT (t$, 0, FileName$, LineNum)
   
- If _DBG\InsideIDE = #False
-    If IsFile(_DBG\LogFileHandle)
-        MessageRequester("ASSERT !", "A log of the debug session has been saved to " + #CRLF$ + #CRLF$ + _DBG\LogFileName$)
+ If DBG\InsideIDE = #False
+    If IsFile(DBG\LogFileHandle)
+        MessageRequester("ASSERT !", "A log of the debug session has been saved to " + #CRLF$ + #CRLF$ + DBG\LogFileName$)
     Else        
         MessageRequester("ASSERT !", "A fatal error has been encountered.")
     EndIf
@@ -215,10 +216,9 @@ EndProcedure
 CompilerEndIf
 
 EndModule
-; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 179
-; FirstLine = 145
-; Folding = ---
+; IDE Options = PureBasic 6.02 LTS (Windows - x64)
+; CursorPosition = 138
+; FirstLine = 98
 ; EnableXP
 ; EnableUser
 ; CPU = 1

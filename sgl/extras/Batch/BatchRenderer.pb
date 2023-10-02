@@ -6,6 +6,7 @@ XIncludeFile "../../sgl.pbi"
 XIncludeFile "../../sgl.pb"
 
 DeclareModule BatchRenderer
+
 EnableExplicit
 
 Structure Stats
@@ -29,11 +30,11 @@ Declare     DrawQuadAtlas (x, y, w, h, *color.vec4::vec4, texture, *texCoord.vec
 EndDeclareModule
 
 Module BatchRenderer
-UseModule dbg
 
+UseModule dbg
 UseModule gl
 
-Global vao, vbo, ibo, shader
+Global vao, vbo, shader
 
 Structure QuadVertex
  xPos.f ; pos x
@@ -72,9 +73,6 @@ Structure BATCH
  
  *DataBuffer.QuadObject
  *DataPointer.QuadObject
- 
- *IndexBuffer.QuadIndices
- *IndexPointer.QuadIndices
 EndStructure : Global BATCH.BATCH
 
 Procedure init_textures_cache()
@@ -199,7 +197,10 @@ EndProcedure
 
 Procedure.i Init (NumberOfQuads)
  Protected vertex$, fragment$
- 
+ Protected ibo
+ Protected *IndexBuffer.QuadIndices
+ Protected *IndexPointer.QuadIndices
+
  If NumberOfQuads <= 0
     ProcedureReturn 0
  EndIf
@@ -214,9 +215,9 @@ Procedure.i Init (NumberOfQuads)
  
  If (BATCH\DataBuffer = 0) : Goto exit : EndIf
  
- BATCH\IndexBuffer = AllocateMemory(NumberOfQuads * SizeOf(QuadIndices))
+ *IndexBuffer = AllocateMemory(NumberOfQuads * SizeOf(QuadIndices))
  
- If (BATCH\IndexBuffer = 0) : Goto exit :  EndIf
+ If (*IndexBuffer = 0) : Goto exit :  EndIf
 
  BATCH\bufferSizeInQuads = NumberOfQuads
  
@@ -224,7 +225,7 @@ Procedure.i Init (NumberOfQuads)
 
  BATCH\DataPointer = BATCH\DataBuffer
  
- BATCH\IndexPointer = BATCH\IndexBuffer
+ *IndexPointer = *IndexBuffer
 
  vertex$ = PeekS(?vertex, ?vertex_end - ?vertex, #PB_UTF8)
  
@@ -283,18 +284,24 @@ Procedure.i Init (NumberOfQuads)
  Protected i
  
  For i = 0 To BATCH\bufferSizeInQuads - 1
-    BATCH\IndexPointer\index[0] = 0 + (i * 4)
-    BATCH\IndexPointer\index[1] = 1 + (i * 4)
-    BATCH\IndexPointer\index[2] = 2 + (i * 4)
-    BATCH\IndexPointer\index[3] = 2 + (i * 4)
-    BATCH\IndexPointer\index[4] = 3 + (i * 4)
-    BATCH\IndexPointer\index[5] = 0 + (i * 4)
+    *IndexPointer\index[0] = 0 + (i * 4)
+    *IndexPointer\index[1] = 1 + (i * 4)
+    *IndexPointer\index[2] = 2 + (i * 4)
+    *IndexPointer\index[3] = 2 + (i * 4)
+    *IndexPointer\index[4] = 3 + (i * 4)
+    *IndexPointer\index[5] = 0 + (i * 4)
     
-    BATCH\IndexPointer + SizeOf(QuadIndices)
+    *IndexPointer + SizeOf(QuadIndices)
  Next
     
- glBufferData_(#GL_ELEMENT_ARRAY_BUFFER, SizeOf(QuadIndices) * BATCH\bufferSizeInQuads, BATCH\IndexBuffer, #GL_DYNAMIC_DRAW)   
- 
+ glBufferData_(#GL_ELEMENT_ARRAY_BUFFER, SizeOf(QuadIndices) * BATCH\bufferSizeInQuads, *IndexBuffer, #GL_STATIC_DRAW)
+
+ glBindVertexArray_(0)
+    
+ FreeMemory(*IndexBuffer)
+      
+ glDeleteBuffers_(1, @ibo)
+     
  BATCH\init = 1
  
  ProcedureReturn 1
@@ -302,7 +309,7 @@ Procedure.i Init (NumberOfQuads)
  exit:
   
  If (BATCH\DataBuffer) : FreeMemory(BATCH\DataBuffer) : EndIf
- If (BATCH\IndexBuffer) : FreeMemory(BATCH\IndexBuffer) : EndIf 
+ If (*IndexBuffer) : FreeMemory(*IndexBuffer) : EndIf 
  
  ProcedureReturn 0
 EndProcedure
@@ -311,9 +318,13 @@ Procedure Destroy()
  glBindVertexArray_(0)
  glBindBuffer_(#GL_ARRAY_BUFFER, 0)
  glBindBuffer_(#GL_ELEMENT_ARRAY_BUFFER, 0)
+ 
+ glDeleteBuffers_(1, @vbo)
+ glDeleteVertexArrays_(1, @vao)
+ glDeleteTextures_(1, @BATCH\Textures(0)) 
+ 
  sgl::DestroyShaderProgram (shader)
- FreeMemory(BATCH\DataBuffer)  
- FreeMemory(BATCH\IndexBuffer)  
+ FreeMemory(BATCH\DataBuffer)
 EndProcedure
 
 Procedure StartRenderer (width, height)
@@ -492,8 +503,8 @@ EndModule
 
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 4
-; Folding = ----
+; CursorPosition = 323
+; FirstLine = 319
 ; EnableXP
 ; EnableUser
 ; CPU = 1

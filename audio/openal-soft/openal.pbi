@@ -13,6 +13,9 @@
 ; 16-bit PCM data is expressed as a signed value over the range -32768 to 32767, 0 being an audio output level of zero. 
 ; Stereo data is expressed in interleaved format, left channel first. 
 ; Buffers containing more than one channel of data will be played without 3D spatialization.
+;
+; https://openal-soft.org/openal-extensions/
+; https://github.com/openalext/openalext
 ; *********************************************************************************************************************
 
 DeclareModule openal
@@ -273,9 +276,9 @@ Module openal
  ; NOP
 EndModule
 
-; IDE Options = PureBasic 6.02 LTS (Windows - x64)
-; CursorPosition = 7
-; Folding = -
+; IDE Options = PureBasic 6.02 LTS (Windows - x86)
+; CursorPosition = 53
+; FirstLine = 3
 ; EnableXP
 ; EnableUser
 ; CPU = 1

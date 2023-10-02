@@ -33,29 +33,28 @@ EndProcedure
 Procedure test()
  
  Protected file$
- 
- Protected sound = audio::CreateSound()
- play (sound)
- 
- file$ = "mono-16-bits.wav"
+
+ file$ = "purebasic-mono-16-bits.wav"
  Protected bufPureBasic = audio::CreateBufferFromFile("../assets/" + file$)
  
  file$ = "ping.wav"
  Protected bufPing = audio::CreateBufferFromFile("../assets/" + file$)
- 
+
+ Protected sound = audio::CreateSound()
+  
  If bufPureBasic
     audio::BindBuffer(sound, bufPureBasic)
-    play (sound)
+    play (sound) ; purebasic
  EndIf
  
  If bufPing
     audio::BindBuffer(sound, bufPing)
-    play (sound)
+    play (sound) ; ping 
  EndIf
 
  If bufPureBasic
     audio::BindBuffer(sound, bufPureBasic)
-    play (sound)
+    play (sound) ; purebasic
  EndIf
  
  If sound : audio::DestroySound(sound) : EndIf 
@@ -93,9 +92,8 @@ If audio::Init()
     audio::Shutdown()
 EndIf
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 38
-; FirstLine = 24
-; Folding = -
+; CursorPosition = 59
+; FirstLine = 18
 ; EnableXP
 ; EnableUser
 ; CPU = 1

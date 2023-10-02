@@ -35,7 +35,7 @@ UseModule dbg
 
 UseModule gl
 
-Global gVao, gVbo, gIbo, gShader
+Global gVao, gVbo, gShader
 Global gWidth, gHeigth
 
 Structure QuadVertex
@@ -73,10 +73,7 @@ Structure BATCH
  Array Textures.i(0)
  
  *DataBuffer.QuadObject
- *DataPointer.QuadObject
- 
- *IndexBuffer.QuadIndices
- *IndexPointer.QuadIndices
+ *DataPointer.QuadObject 
 EndStructure : Global BATCH.BATCH
 
 Procedure init_textures_cache()
@@ -203,7 +200,10 @@ EndProcedure
 
 Procedure.i Init (NumberOfQuads)
  Protected vertex$, fragment$
- 
+ Protected ibo
+ Protected *IndexBuffer.QuadIndices
+ Protected *IndexPointer.QuadIndices
+
  If NumberOfQuads <= 0
     ProcedureReturn 0
  EndIf
@@ -218,9 +218,9 @@ Procedure.i Init (NumberOfQuads)
  
  If (BATCH\DataBuffer = 0) : Goto exit : EndIf
  
- BATCH\IndexBuffer = AllocateMemory(NumberOfQuads * SizeOf(QuadIndices))
+ *IndexBuffer = AllocateMemory(NumberOfQuads * SizeOf(QuadIndices))
  
- If (BATCH\IndexBuffer = 0) : Goto exit :  EndIf
+ If (*IndexBuffer = 0) : Goto exit :  EndIf
 
  BATCH\bufferSizeInQuads = NumberOfQuads
  
@@ -228,7 +228,7 @@ Procedure.i Init (NumberOfQuads)
 
  BATCH\DataPointer = BATCH\DataBuffer
  
- BATCH\IndexPointer = BATCH\IndexBuffer
+ *IndexPointer = *IndexBuffer
 
  vertex$ = PeekS(?vertex, ?vertex_end - ?vertex, #PB_UTF8)
  
@@ -261,7 +261,7 @@ Procedure.i Init (NumberOfQuads)
  glGenBuffers_(1, @gVbo)
 
  ; index buffer
- glGenBuffers_(1, @gIbo)
+ glGenBuffers_(1, @ibo)
  
  glBindVertexArray_(gVao)
     
@@ -282,22 +282,28 @@ Procedure.i Init (NumberOfQuads)
  glVertexAttribPointer_(3, 1, #GL_FLOAT, #GL_FALSE, SizeOf(QuadVertex), OffsetOf(QuadVertex\texture))
  
  ; index buffer   
- glBindBuffer_(#GL_ELEMENT_ARRAY_BUFFER, gIbo)
+ glBindBuffer_(#GL_ELEMENT_ARRAY_BUFFER, ibo)
  
  Protected i
  
  For i = 0 To BATCH\bufferSizeInQuads - 1
-    BATCH\IndexPointer\index[0] = 0 + (i * 4)
-    BATCH\IndexPointer\index[1] = 1 + (i * 4)
-    BATCH\IndexPointer\index[2] = 2 + (i * 4)
-    BATCH\IndexPointer\index[3] = 2 + (i * 4)
-    BATCH\IndexPointer\index[4] = 3 + (i * 4)
-    BATCH\IndexPointer\index[5] = 0 + (i * 4)
+    *IndexPointer\index[0] = 0 + (i * 4)
+    *IndexPointer\index[1] = 1 + (i * 4)
+    *IndexPointer\index[2] = 2 + (i * 4)
+    *IndexPointer\index[3] = 2 + (i * 4)
+    *IndexPointer\index[4] = 3 + (i * 4)
+    *IndexPointer\index[5] = 0 + (i * 4)
     
-    BATCH\IndexPointer + SizeOf(QuadIndices)
+    *IndexPointer + SizeOf(QuadIndices)
  Next
     
- glBufferData_(#GL_ELEMENT_ARRAY_BUFFER, SizeOf(QuadIndices) * BATCH\bufferSizeInQuads, BATCH\IndexBuffer, #GL_DYNAMIC_DRAW)   
+ glBufferData_(#GL_ELEMENT_ARRAY_BUFFER, SizeOf(QuadIndices) * BATCH\bufferSizeInQuads, *IndexBuffer, #GL_STATIC_DRAW)   
+ 
+ glBindVertexArray_(0)
+ 
+ FreeMemory(*IndexBuffer)
+ 
+ glDeleteBuffers_(1, @ibo)
  
  BATCH\init = 1
  
@@ -306,7 +312,7 @@ Procedure.i Init (NumberOfQuads)
  exit:
   
  If (BATCH\DataBuffer) : FreeMemory(BATCH\DataBuffer) : EndIf
- If (BATCH\IndexBuffer) : FreeMemory(BATCH\IndexBuffer) : EndIf 
+ If (*IndexBuffer) : FreeMemory(*IndexBuffer) : EndIf 
  
  ProcedureReturn 0
 EndProcedure
@@ -315,9 +321,13 @@ Procedure Destroy()
  glBindVertexArray_(0)
  glBindBuffer_(#GL_ARRAY_BUFFER, 0)
  glBindBuffer_(#GL_ELEMENT_ARRAY_BUFFER, 0)
+ 
+ glDeleteBuffers_(1, @gVbo)
+ glDeleteVertexArrays_(1, @gVao)
+ glDeleteTextures_(1, @BATCH\Textures(0)) 
+ 
  sgl::DestroyShaderProgram (gShader)
  FreeMemory(BATCH\DataBuffer)  
- FreeMemory(BATCH\IndexBuffer)  
 EndProcedure
 
 Procedure StartRenderer (width, height)
@@ -507,9 +517,8 @@ EndModule
 
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 6
-; FirstLine = 2
-; Folding = ----
+; CursorPosition = 319
+; FirstLine = 319
 ; EnableXP
 ; EnableUser
 ; CPU = 1

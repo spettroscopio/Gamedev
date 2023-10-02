@@ -293,10 +293,9 @@ If openal_load::Load() = openal_load::#LOAD_OK
 Else
     Debug "Import failed."
 EndIf
-; IDE Options = PureBasic 6.02 LTS (Windows - x64)
-; CursorPosition = 119
-; FirstLine = 86
-; Folding = --
+; IDE Options = PureBasic 6.02 LTS (Windows - x86)
+; CursorPosition = 62
+; FirstLine = 62
 ; EnableXP
 ; EnableUser
 ; CPU = 1

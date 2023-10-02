@@ -39,7 +39,8 @@ Procedure LoadAndPlay (file$)
      EndIf
  EndIf
 
- If sound  : audio::DestroySound(sound)   : EndIf 
+ If sound  : audio::DestroySound(sound)   : EndIf
+ 
  If buffer : audio::DestroyBuffer(buffer) : EndIf 
        
  Debug ""
@@ -60,10 +61,10 @@ Procedure Main()
  Debug "Current device name: " + audio::GetCurrentDeviceName()
  Debug ""
              
- file$ = "mono-08-bits.wav" 
+ file$ = "purebasic-mono-08-bits.wav" 
  LoadAndPlay (file$)
 
- file$ = "mono-16-bits.wav" 
+ file$ = "purebasic-mono-16-bits.wav" 
  LoadAndPlay (file$)
  
  file$ = "stereo-24-bits.wav" 
@@ -89,10 +90,9 @@ If audio::Init()
     Main()
     audio::Shutdown()
 EndIf
-; IDE Options = PureBasic 6.02 LTS (Linux - x64)
-; CursorPosition = 14
-; FirstLine = 6
-; Folding = -
+; IDE Options = PureBasic 6.02 LTS (Windows - x86)
+; CursorPosition = 42
+; FirstLine = 14
 ; EnableXP
 ; EnableUser
 ; CPU = 1

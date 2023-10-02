@@ -54,10 +54,10 @@ Procedure Main()
  Debug "Current device name: " + audio::GetCurrentDeviceName()
  Debug ""
              
- file$ = "mono-08-bits.wav" 
+ file$ = "purebasic-mono-08-bits.wav" 
  GetFileStats (file$)
 
- file$ = "mono-16-bits.wav" 
+ file$ = "purebasic-mono-16-bits.wav" 
  GetFileStats (file$)
 
  file$ = "stereo-24-bits.wav" 
@@ -88,9 +88,9 @@ If audio::Init()
     Main()
     audio::Shutdown()
 EndIf
-; IDE Options = PureBasic 6.02 LTS (Windows - x64)
-; CursorPosition = 17
-; Folding = -
+; IDE Options = PureBasic 6.02 LTS (Windows - x86)
+; CursorPosition = 62
+; FirstLine = 30
 ; EnableXP
 ; EnableUser
 ; CPU = 1

@@ -23,7 +23,6 @@ Declare.s   TrimEx (in$, char$ = " ") ; Removes char$ from in$ left and right, a
 Declare.s   PadLeft (s$, newlen, char$ = " ") ; Pads to the left the string s$ with the char char$.
 Declare.s   PadRight (s$, newlen, char$ = " ") ; Pads to the right the string s$ with the char char$.
 Declare.s   FormatQuad (value.q, sep$ = ",") ; Returns the quad converted to a string including a thousands separator.
-Declare.s   FormatDouble (value.d,  decimals = 2, decSep$ =".", thouSep$=",", alwaysSign = #False) ; Returns the double converted to a string including a thousands separator and a fixed number of decimals.
 Declare.s   FormatBytes (Bytes.d, format, decimals = 1) ; Returns the bytes converted to a string including a thousands separator and a fixed number of decimals plus the appropriate unit suffix.
 Declare.i   SplitToArray (s$, sep$, Array arr$(1)) ; Split a string using the specified separator into an array of strings.
 Declare.i   SplitToArrayEx (s$, sepList$, Array arr$(1)) ; Split a string using the specified separators list into an array of strings.
@@ -278,47 +277,6 @@ Procedure.s FormatQuad (value.q, sep$ = ",")
  ProcedureReturn r$
 EndProcedure
 
-Procedure.s FormatDouble (value.d,  decimals = 2, decSep$ =".", thouSep$=",", alwaysSign = #False)
-;> Returns the double converted to a string including a thousands separator and a fixed number of decimals.
-; Original code: https://www.purebasic.fr/german/viewtopic.php?p=333457&sid=b6f80a624e737ffe417efb25b40c6f6b#p333457
-
- Protected ret$
- Protected sign, i
- Protected num$, left$, right$
-  
- If value < 0
-    value = -value
-    sign = 1
- EndIf
-  
- num$ = StrD(value, decimals) + "."
- left$ = StringField(num$, 1, ".")
- right$ = StringField(num$, 2, ".")
- 
- i = Len(left$) - 3
-  
- While i > 0
-    left$ = Left(left$,i) + thouSep$ + Mid(left$, i+1)
-    i-3
- Wend
- 
- If left$ = #Empty$
-    left$ = "0"
- EndIf
- 
- If right$ <> #Empty$
-    ret$ = left$ + decSep$ + right$
- Else
-    ret$ = left$
- EndIf
- 
- If sign Or alwaysSign
-    ret$ = Mid("+-", sign + 1, 1) + ret$
- EndIf
-  
- ProcedureReturn ret$
-EndProcedure
-
 Procedure.s FormatBytes (Bytes.d, format, decimals = 1)
 ;> Returns the bytes converted to a string including a thousands separator and a fixed number of decimals plus the appropriate unit suffix.
 
@@ -357,9 +315,9 @@ Procedure.s FormatBytes (Bytes.d, format, decimals = 1)
  EndIf
   
  If Exponent
-    ProcedureReturn FormatDouble (Bytes / Pow(Base, Exponent), decimals) + " " + StringField(Unit$, Exponent, ",")
+    ProcedureReturn FormatNumber (Bytes / Pow(Base, Exponent), decimals) + " " + StringField(Unit$, Exponent, ",")
  Else
-    ProcedureReturn FormatDouble (Bytes, 0) + " Bytes"
+    ProcedureReturn FormatNumber (Bytes, 0) + " Bytes"
  EndIf
 EndProcedure
 
@@ -430,10 +388,9 @@ EndProcedure
 
 EndModule
 
-; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 35
-; FirstLine = 35
-; Folding = ---
+; IDE Options = PureBasic 6.02 LTS (Windows - x64)
+; CursorPosition = 324
+; FirstLine = 276
 ; EnableXP
 ; EnableUser
 ; CPU = 1

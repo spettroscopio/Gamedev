@@ -118,39 +118,6 @@ Procedure test07 (sound)
  Debug "Done."
 EndProcedure
 
-Procedure test08 (sound)
- Debug ""   
- Debug "Plays the sound looped, while rising and lowering the volume"
- Delay(1000)
-
- Protected time, delta, tick
- Protected volume.f, rad.f
-
- Protected length = audio::GetLength(sound, audio::#Milliseconds) * 3     
-
- audio::Play(sound, #True)
-
- time = ElapsedMilliseconds()    
-
- While delta < length
-    rad = (delta / length) * #PI * 3.0
-    volume = (Cos(rad) + 1.0) / 2.0
-    
-    audio::SetVolume(sound, volume)
-    
-    If ElapsedMilliseconds() - tick >= 100 ; ms
-        tick = ElapsedMilliseconds() 
-        Debug StrF(volume,2)
-    EndIf
-    
-    delta = ElapsedMilliseconds() - time
- Wend
- 
- audio::Stop(sound)
- 
- Debug "Done."
-EndProcedure
-
 Procedure Main() 
  Debug audio::GetVersion()
  Debug audio::GetOpenALVersion()
@@ -162,7 +129,7 @@ Procedure Main()
  Debug "Current device name: " + audio::GetCurrentDeviceName()
  Debug ""
              
- Protected file$ = "mono-16-bits.wav" 
+ Protected file$ = "purebasic-mono-16-bits.wav" 
   
  Protected buffer = audio::CreateBufferFromFile("../assets/" + file$)
  
@@ -191,7 +158,6 @@ Procedure Main()
         test05(sound)
         test06(sound)
         test07(sound)
-        test08(sound)
     
     EndIf
  EndIf
@@ -209,9 +175,8 @@ If audio::Init()
     audio::Shutdown()
 EndIf
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 170
-; FirstLine = 160
-; Folding = --
+; CursorPosition = 119
+; FirstLine = 109
 ; EnableXP
 ; EnableUser
 ; CPU = 1

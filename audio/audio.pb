@@ -2,7 +2,7 @@
 ; audio.pb
 ; by luis
 ;
-; Play sounds.
+; To play sounds.
 ;
 ; Tested on: Windows (x86, x64)
 ;
@@ -11,20 +11,7 @@
 
 ; TODO
 
-; pause array / resume array
-; play array
-; list of sounds playing from btSounds
-; list of sounds paused from btSounds
-; [ok] global volume -> https://stackoverflow.com/questions/3814564/how-to-adjust-the-volume-of-a-sound-in-openal
-; CreateBufferFromMemory()
 ; 3D sound
-
-
-; https://wiki.ogre3d.org/OpenAl+Soundmanager
-; extensions ? (AL_SOFT_buffer_length_query for GetLength() ) - set a flag in init to just use it when required
-; events extension ? AL_SOFT_events
-; https://openal-soft.org/openal-extensions/
-; https://github.com/openalext/openalext
 
 XIncludeFile "./openal-soft/openal.pbi" 
 XIncludeFile "./openal-soft/openal.load.pb" 
@@ -34,6 +21,7 @@ XIncludeFile "./libsndfile/libsndfile.load.pb"
 
 XIncludeFile "../inc/dbg.pb"
 XIncludeFile "../inc/str.pb"
+XIncludeFile "../inc/SBBT.pb"
 
 ;- * INTERFACE *
 
@@ -69,77 +57,80 @@ Structure SoundFileInfo
 EndStructure
 
 Structure SoundLocation
+; TODO
 EndStructure
 
 ;- Declares
 
-Declare     RegisterErrorCallBack (*fp) ; Registers a callback to get runtime error messages from the library.
-Declare.i   Init() ; Initialize the library.
-Declare     Shutdown() ; Shutdown the library.
-Declare.s   GetVersion() ; Returns a string representing the Audio version.
-Declare.s   GetLibSndFileVersion() ; Returns a string representing the version of the LibSndFile support library.
-Declare.s   GetOpenALVersion() ; Returns a string representing the version of the OpenAL support library.
-Declare.s   GetDefaultDeviceName() ; Returns the string identifying the default playback device.
-Declare.i   GetAllDevicesNames (Array devices$(1)) ; Populates an array of strings identifying all the available playback devices.
-Declare.s   GetCurrentDeviceName() ; Returns the string identifying the device associated to the current context.
-Declare.i   OpenDevice (device$ = #Null$) ; Open the specified playback device using its name or default one if the name is omitted.
-Declare.i   GetCurrentDevice() ; Returns the handle of the playback device associated to the current context.
-Declare     CloseDevice (device) ; Close the specified playback device and destroys the current context, if any.
-Declare.i   GetSoundFileInfo (file$, *sfi.SoundFileInfo) ; Retrieves some info about the specified aound file and fills the passed structure with them.
-Declare.i   CreateBufferFromRawData (bits, samplerate, channels, *data, dataSize)
-Declare.i   CreateBufferFromFile (file$) ; Load an audio buffer from the sound file and returns its handle.
-Declare.i   IsBufferBound (buffer)
-Declare.i   IsSoundBound (sound)
-Declare.i   CreateSound()
-Declare.i   BindBuffer (sound, buffer) ; Bind the passed audio buffer to the source and unbinds the previously bound if any.
-Declare.i   CreateSoundFromBuffer (buffer) ; Create a sound from the passed audio buffer and returns its handle.
-Declare     DestroySound (sound) ; Destroy a sound releasing its own resource.
-Declare     DestroyBuffer (buffer) ; Destroy a buffer releasing its own resource.
-Declare.i   GetAudioDataSize (sound) ; Returns the size in bytes of the audio data stored in memory for the sound.
-Declare.s   GetFormatString (sound) ; Returns the audio format string of the loaded audio file.
-Declare.s   GetSubFormatString (sound) ; Returns the sub-audio format string of the loaded audio file.
-Declare.i   GetChannels (sound) ; Returns the number of channels of the sound (1 = mono, 2 = stereo).
-Declare.i   GetSampleRate (sound) ; Returns the sample rate in Hz of the sound.
-Declare.i   GetLength (sound, format) ; Returns the length of the sound expressed in milliseconds or frames.
-Declare     SetLooping (sound, loop)
-Declare.i   GetState (sound) ; Returns the current state of the sound.
-Declare.i   GetPos (sound, format) ; Returns the current position in milliseconds or frames for the specified sound.
-Declare     SetPos (sound, position, format) ; Sets the sound current position in milliseconds or frames.
-Declare     Play (sound, loop = #False) ; Start playing the specified audio file.
-Declare     Stop (sound) ; Stop the reporduction of the specified audio file.
-Declare     Pause (sound) ; Pause the reproduction of the specified audio file.
-Declare     Resume (sound) ; Resume the reproduction of specified sound if it was paused, else do nothing.
-Declare     SetVolume (sound, volume.f) ; Set the volume of the specified audio file (from 0.0 to 1.0)
-Declare.f   GetGlobalVolume() ; Returns the global volume (from 0.0 to 1.0)
-Declare     SetGlobalVolume (volume.f) ; Set the global volume (from 0.0 to 1.0)
-Declare     SetLocation (sound, *loc.SoundLocation)
+Declare      RegisterErrorCallBack (*fp) ; Registers a callback to get runtime error messages from the library.
+Declare.i    Init() ; Initialize the library.
+Declare      Shutdown() ; Shutdown the library.
+Declare.s    GetVersion() ; Returns a string representing the Audio version.
+Declare.s    GetLibSndFileVersion() ; Returns a string representing the version of the LibSndFile support library.
+Declare.s    GetOpenALVersion() ; Returns a string representing the version of the OpenAL support library.
+Declare.s    GetDefaultDeviceName() ; Returns the string identifying the default playback device.
+Declare.i    GetAllDevicesNames (Array devices$(1)) ; Populates an array of strings identifying all the available playback devices.
+Declare.s    GetCurrentDeviceName() ; Returns the string identifying the device associated to the current context.
+Declare.i    OpenDevice (device$ = #Null$) ; Open the specified playback device using its name or default one if the name is omitted.
+Declare.i    GetCurrentDevice() ; Returns the handle of the playback device associated to the current context.
+Declare      CloseDevice (device) ; Close the specified playback device and destroys the current context, if any.
+Declare.i    GetSoundFileInfo (file$, *sfi.SoundFileInfo) ; Retrieves some info about the specified aound file and fills the passed structure with them.
+Declare.i    CreateBufferFromMemory (bits, samplerate, channels, *data, dataSize)
+Declare.i    CreateBufferFromMemoryFile (*data, dataSize)
+Declare.i    CreateBufferFromFile (file$) ; Creates an audio buffer from the sound file and returns its handle.
+Declare.i    IsBufferBound (buffer)
+Declare.i    IsSoundBound (sound)
+Declare.i    CreateSound()
+Declare.i    CreateSoundFromBuffer (buffer) ; Create a sound from the passed audio buffer and returns its handle.
+Declare.i    BindBuffer (sound, buffer) ; Bind the passed audio buffer to the source and unbinds the previously bound if any.
+Declare      DestroySound (sound) ; Destroy a sound releasing its own resources.
+Declare      DestroyBuffer (buffer) ; Destroy a buffer releasing its own resource.
+Declare.i    GetAudioDataSize (sound) ; Returns the size in bytes of the audio data stored in memory for the sound.
+Declare.s    GetFormatString (sound) ; Returns the audio format string of the loaded audio file.
+Declare.s    GetSubFormatString (sound) ; Returns the sub-audio format string of the loaded audio file.
+Declare.i    GetChannels (sound) ; Returns the number of channels of the sound (1 = mono, 2 = stereo).
+Declare.i    GetSampleRate (sound) ; Returns the sample rate in Hz of the sound.
+Declare.i    GetLength (sound, format) ; Returns the length of the sound expressed in milliseconds or frames.
+Declare      SetLooping (sound, loop)
+Declare.i    GetState (sound) ; Returns the current state of the sound.
+Declare.i    GetPos (sound, format) ; Returns the current position in milliseconds or frames for the specified sound.
+Declare      SetPos (sound, position, format) ; Sets the sound current position in milliseconds or frames.
+Declare      Play (sound, loop = #False) ; Start playing the specified audio file.
+Declare      Pause (sound) ; Pause the reproduction of the specified audio file.
+Declare      Resume (sound) ; Resume the reproduction of specified sound if it was paused, else do nothing.
+Declare      Stop (sound) ; Stop the reproduction of the specified audio file.
+Declare      PlayArray (Array sounds(1)) ; Start playing the sounds listed in the array while guaranteeing synchronized operation.
+Declare      PauseArray (Array sounds(1)) ; Pause the reproduction of the sounds listed in the array while guaranteeing synchronized operation.
+Declare      ResumeArray (Array sounds(1)) ; Resume the reproduction of the sounds listed in the array which are currently paused while guaranteeing synchronized operation.
+Declare      StopArray (Array sounds(1)) ; Stop the reproduction of the sounds listed in the array while guaranteeing synchronized operation.
+Declare      PauseAll() ; Pause the reproduction of every sound currently playing.
+Declare      ResumeAll() ; Resume the reproduction of every sound currently paused.
+Declare      StopAll() ; Stop every sound currently playing or paused.
+Declare      SetVolume (sound, volume.f) ; Set the volume of the specified sound (from 0.0 to 1.0)
+Declare      SetGlobalVolume (volume.f) ; Set the global volume (from 0.0 to 1.0)
+Declare      SetLocation (sound, *loc.SoundLocation)
 
 EndDeclareModule
 
-;- * IMPLEMENTATION *
 
 Module audio
 
 EnableExplicit
 
-; Please note: in OpenAL samples are the same thing as frames in libsndfile: a set of PCM data for every channel.
-; A 16 bit mono sample is 16 bits of data = one OpenAL sample or one libsndfile frame.
-; A 16 bit stereo sample is 32 bits of data (16 bits per channel) = one OpenAL sample or one libsndfile frame.
-
-; On a source in the AL_STOPPED state, all buffers are processed.
-; On a source in the AL_INITIAL state, no buffers are processed, all buffers are pending. 
-; alSourceStop() applied to an AL_INITIAL source is a legal NOP
+; In OpenAL samples are the same thing as frames in libsndfile: a unit of PCM data for every channel.
+; A 16 bit mono sample is 16 bits of data = one OpenAL sample = one libsndfile frame.
+; A 16 bit stereo sample is 32 bits of data (16 bits per channel) = one OpenAL sample = one libsndfile frame.
+; On a source in the AL_STOPPED state, all buffers are marked as processed.
+; On a source in the AL_INITIAL state, no buffers are being processed, and all buffers are pending.
 
 UseModule libsndfile ; import constants and global functions 
 UseModule openal ; import constants and global functions 
 UseModule dbg
 
-
 ;- Structures
 
 Structure AudioBuffer
- magic.l     ; magic number
- 
+ magic.l     ; magic number 
  ALBuffer.i  ; OpenAL buffer object 
  srcMajFmt$  ; string description of the audio format
  srcSubFmt$  ; string description of the audio subformat
@@ -159,13 +150,24 @@ Structure SoundHandle
  *buffer.AudioBuffer ; AudioBuffer
 EndStructure
 
+Structure VirtualUserData 
+ *fp    ; virtual file pointer
+ *start ; pointer to the start of the virtual file
+ length.i ; length of the virtual file 
+EndStructure
+
 ;- Declares
 
-Declare.i   LSF_CheckError (sf, here$)
-Declare.i   OAL_CheckError (here$)
-Declare.i   OAL_ContextCheckError (device, here$)
-Declare.i   PopulateDeviceList (*p, Array devices$(1))
-Declare     InitAudioObj()
+Declare.i    LSF_CheckError (sf, here$)
+Declare.i    OAL_CheckError (here$)
+Declare.i    OAL_ContextCheckError (device, here$)
+Declare.i    PopulateDeviceList (*p, Array devices$(1))
+Declare      InitAudioObj()
+
+DeclareC.q   cb_get_filelen (*user_data)
+DeclareC.q   cb_seek (offset.q, whence, *user_data)
+DeclareC.q   cb_read (*ptr, count.q, *user_data)
+DeclareC.q   cb_tell (*user_data)
 
 ; error callback sources
 #SOURCE_ERROR_AUDIO$        = "AUDIO"
@@ -181,9 +183,9 @@ Declare     InitAudioObj()
 
 Structure AUDIO_OBJ
  initialized.i
- fpCallBack_Error.CallBack_Error 
  *btSounds
  *btBuffers
+ fpCallBack_Error.CallBack_Error 
 EndStructure : Global AUDIO.AUDIO_OBJ : InitAudioObj()
 
 Macro FRAMES_TO_MILLISECONDS (frames, samplerate)
@@ -226,9 +228,8 @@ Procedure.i LSF_CheckError (sf, here$)
  Protected err = sf_error(sf)
  Protected *p, err$
  
- If err <> #SF_ERR_NO_ERROR
-    ; sf_error_number() convert the  internal error enumerations into text strings
-    *p = sf_error_number(err)
+ If err <> #SF_ERR_NO_ERROR        
+    *p = sf_error_number(err) ; convert the  internal error enumerations into text strings
     
     If *p
         err$ = PeekS(*p, -1, #PB_UTF8)
@@ -280,7 +281,7 @@ Procedure.i OAL_ContextCheckError (device, here$)
             CALLBACK_ERROR(#SOURCE_ERROR_OPENAL$, "#ALC_OUT_OF_MEMORY", here$)
      EndSelect
  EndIf
-  
+   
  ProcedureReturn err
 EndProcedure
 
@@ -308,9 +309,54 @@ EndProcedure
 Procedure InitAudioObj() 
  AUDIO\initialized = 0
  AUDIO\fpCallBack_Error = 0
- AUDIO\btSounds = sbbt::New(#PB_Integer)
- AUDIO\btBuffers = sbbt::New(#PB_Integer)
+ AUDIO\btSounds = SBBT::New(#PB_Integer)
+ AUDIO\btBuffers = SBBT::New(#PB_Integer)
 EndProcedure 
+
+;- Virtual I/O
+
+ProcedureC.q cb_get_filelen (*user_data)
+ Protected *vud.VirtualUserData = *user_data
+ ProcedureReturn *vud\length
+EndProcedure
+
+ProcedureC.q cb_seek (offset.q, whence, *user_data)
+ Protected *vud.VirtualUserData = *user_data
+
+ Select whence
+    Case #SEEK_CUR
+        *vud\fp + offset
+    Case #SEEK_SET
+        *vud\fp = *vud\start + offset
+    Case #SEEK_END
+        *vud\fp = (*vud\start + *vud\length - 1) + offset
+ EndSelect
+ 
+ ProcedureReturn (*vud\fp - *vud\start)
+EndProcedure
+
+ProcedureC.q cb_read (*ptr, count.q, *user_data)
+ Protected *vud.VirtualUserData = *user_data
+ Protected *end = *vud\start + *vud\length - 1
+ Protected length
+ 
+ If (*vud\fp + count - 1) <= *end
+    length = count
+ Else
+    length = *end - *vud\fp + 1
+ EndIf
+ 
+ CopyMemory (*vud\fp, *ptr, length)
+ 
+ *vud\fp + length
+ 
+ ProcedureReturn length
+EndProcedure
+
+ProcedureC.q cb_tell (*user_data)
+ Protected *vud.VirtualUserData = *user_data
+ ProcedureReturn (*vud\fp - *vud\start)
+EndProcedure
 
 ;- * PUBLIC *
 
@@ -353,29 +399,14 @@ EndProcedure
 
 Procedure Shutdown()
 ;> Shutdown the library.
-; You should always call CloseDevice() before invoking Shutdown()
+; You should always call CloseDevice() before invoking Shutdown().
 
- Protected buffer, sound
- 
  AUDIO\initialized = 0
  
- If AUDIO\btBuffers 
-     sbbt::EnumStart(AUDIO\btBuffers)
-     
-     While sbbt::EnumNext(AUDIO\btBuffers)
-        buffer = sbbt::GetValue(AUDIO\btBuffers)
-        ; TODO delete buffer 
-     Wend
-     
-     sbbt::EnumEnd(AUDIO\btBuffers)
-    
-     sbbt::Free(AUDIO\btBuffers)
- EndIf
- 
- ; TODO same for sounds
- 
- libsndfile_load::Shutdown()
+ SBBT::Free(AUDIO\btSounds)
+ SBBT::Free(AUDIO\btBuffers)
 
+ libsndfile_load::Shutdown()
  openal_load::Shutdown()
 EndProcedure
 
@@ -603,23 +634,66 @@ EndProcedure
 Procedure CloseDevice (device)
 ;> Close the specified playback device and destroys the current context, if any.
 
+ Protected i 
  Protected context
+ Protected soundsCount, buffersCount
 
  If device
-    ALC_ERROR(device)
-            
-    context = alcGetCurrentContext()
-    ALC_ERROR(device)
+    soundsCount = SBBT::Count(AUDIO\btSounds)
+    buffersCount = SBBT::Count(AUDIO\btBuffers)
+  
+     If soundsCount
+        Dim sounds (soundsCount - 1)
         
-    If context                
+        SBBT::EnumStart(AUDIO\btSounds)    
+        i = 0
+        
+        While SBBT::EnumNext(AUDIO\btSounds)
+            sounds(i) = SBBT::GetKey(AUDIO\btSounds)
+            i + 1
+        Wend
+        
+        SBBT::EnumEnd(AUDIO\btSounds)        
+     EndIf
+     
+     If buffersCount
+        Dim buffers (buffersCount - 1)
+        
+        SBBT::EnumStart(AUDIO\btBuffers)    
+        i = 0
+         
+        While SBBT::EnumNext(AUDIO\btBuffers)
+            buffers(i) = SBBT::GetKey(AUDIO\btBuffers)
+            i + 1
+        Wend
+         
+        SBBT::EnumEnd(AUDIO\btBuffers)        
+     EndIf
+    
+     For i = 0 To soundsCount - 1
+        DestroySound(sounds(i))
+     Next
+     
+     For i = 0 To buffersCount - 1
+        DestroyBuffer(buffers(i))
+     Next
+
+     ; and now closes the device 
+     
+     ALC_ERROR(device)
+                
+     context = alcGetCurrentContext()
+     ALC_ERROR(device)
+            
+     If context                
         alcMakeContextCurrent(#Null)
         ALC_ERROR(device)
-        
+            
         alcDestroyContext(context)
         ALC_ERROR(device)
-    EndIf
-    
-    alcCloseDevice(device)
+     EndIf
+        
+     alcCloseDevice(device) 
  EndIf 
 EndProcedure
 
@@ -679,13 +753,14 @@ Procedure.i GetSoundFileInfo (file$, *sfi.SoundFileInfo)
  EndIf
 EndProcedure
 
-Procedure.i CreateBufferFromRawData (bits, samplerate, channels, *data, dataSize)
-; Returns the handle of an audio buffer created from a region of memory filled with raw audio data.
+Procedure.i CreateBufferFromMemory (bits, samplerate, channels, *data, dataSize)
+; Creates an audio buffer from a region of memory filled with raw audio data and returns its handle.
 ; Both 8 and 16 bits per sample are supported when using this function.
 
  Protected *b.AudioBuffer
 
- ASSERT(*data)
+ ASSERT(*data) 
+ ASSERT(dataSize)
  
  If bits <> 8 And bits <> 16
     CALLBACK_ERROR(#SOURCE_ERROR_LIBSNDFILE$, "Only mono or stereo audio file are supported.", HERE()) 
@@ -742,6 +817,11 @@ Procedure.i CreateBufferFromRawData (bits, samplerate, channels, *data, dataSize
  ; fill the buffer with audio data        
  alBufferData(*b\ALBuffer, *b\audioFormat, *data, dataSize, *b\samplerate)
  If AL_ERROR() : Goto exit : EndIf
+ 
+ If SBBT::Insert(AUDIO\btBuffers, *b) = 0    
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle in the BTree.")
+    Goto exit
+ EndIf
                   
  ProcedureReturn *b
  
@@ -752,11 +832,135 @@ exit:
  If alIsBuffer(ALBuffer) : alDeleteBuffers(1, @ALBuffer) : EndIf
 
  ProcedureReturn 0
+EndProcedure
+
+Procedure.i CreateBufferFromMemoryFile (*data, dataSize)
+;> Creates an audio buffer from the sound file stored in memory and returns its handle.
+; Returns 0 in case of error.
+ 
+ Protected fmt_info.SF_FORMAT_INFO
+ Protected sf_info.SF_INFO
+ Protected *b.AudioBuffer
+
+ ASSERT(*data) 
+ ASSERT(dataSize)
+ 
+ Protected vio.SF_VIRTUAL_IO
+ vio\cb_get_filelen = @cb_get_filelen()
+ vio\cb_seek = @cb_seek()
+ vio\cb_read = @cb_read()
+ vio\cb_write = #Null 
+ vio\cb_tell = @cb_tell()
+ 
+ Protected vud.VirtualUserData
+ vud\start = *data
+ vud\length = dataSize
+ vud\fp = vud\start
+ 
+ Protected sf = sf_open_virtual (@vio, #SFM_READ, @sf_info, @vud)
+ LSF_ERROR(sf)
+ 
+ If sf
+    *b = AllocateStructure(AudioBuffer)
+    ASSERT(*b)
+            
+    *b\magic = #MAGIC_BUFFER
+        
+    *b\channels = sf_info\channels
+    *b\samplerate = sf_info\samplerate
+    *b\length = sf_info\frames
+    *b\bytes = FRAMES_TO_BYTES(*b\length, 16, *b\channels)
+    
+    *b\srcMajFmt = sf_info\format & #SF_FORMAT_TYPEMASK    
+    *b\srcSubFmt = sf_info\format & #SF_FORMAT_SUBMASK
+    
+    fmt_info\format = *b\srcMajFmt    
+    If sf_command (#Null, #SFC_GET_FORMAT_INFO, @fmt_info, SizeOf (SF_FORMAT_INFO)) <> 0
+        CALLBACK_ERROR(#SOURCE_ERROR_LIBSNDFILE$, "The major format cannot be determined for the virtual file", HERE()) 
+        Goto exit
+    EndIf    
+    *b\srcMajFmt$ = PeekS(fmt_info\name, -1, #PB_UTF8) ; get string for major format
+    
+    fmt_info\format = *b\srcSubFmt
+    If sf_command (#Null, #SFC_GET_FORMAT_INFO, @fmt_info, SizeOf (SF_FORMAT_INFO)) <> 0
+        CALLBACK_ERROR(#SOURCE_ERROR_LIBSNDFILE$, "The sub-format cannot be determined for the virtual file", HERE()) 
+        Goto exit
+    EndIf    
+    *b\srcSubFmt$ = PeekS(fmt_info\name, -1, #PB_UTF8) ; get string for subformat
+        
+    If *b\channels < 1 Or *b\channels > 2
+        CALLBACK_ERROR(#SOURCE_ERROR_LIBSNDFILE$, "Only mono or stereo audio file are supported.", HERE()) 
+        Goto exit
+    EndIf
+    
+    If *b\channels = 1
+        *b\audioFormat = #AL_FORMAT_MONO16
+    Else
+        *b\audioFormat = #AL_FORMAT_STEREO16
+    EndIf
+        
+    Protected ALBuffer, *membuf, bufSize, framesRead
+                
+    alGenBuffers(1, @ALBuffer)
+    If AL_ERROR() : Goto exit : EndIf
+    
+    *b\ALBuffer = ALBuffer
+    
+    bufSize = 2 * (*b\channels) * (*b\length) ; 16 bit samples * channels * frames
+    
+    *membuf = AllocateMemory(bufSize)
+    ASSERT(*membuf)
+    
+    framesRead = sf_readf_short(sf, *membuf, *b\length) ; samples are converted to 16 bits upon reading
+    LSF_ERROR(sf)
+    ASSERT(framesRead = *b\length)
+    
+    ; fill the buffer with audio data 
+         
+    alBufferData(*b\ALBuffer, *b\audioFormat, *membuf, bufSize, *b\samplerate)
+    If AL_ERROR() : Goto exit : EndIf    
+                     
+
+    If SBBT::Insert(AUDIO\btBuffers, *b) = 0    
+        CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle in the BTree.")
+        Goto exit
+    EndIf
+    
+    sf_close(sf)
+ Else
+    Protected *p, s$
+    
+    CALLBACK_ERROR(#SOURCE_ERROR_LIBSNDFILE$, "Virtual I/O error", HERE()) 
+    
+    *p = sf_strerror(#Null) ; retrieve a more specific error description
+        
+    If *p
+        s$ = PeekS(*p, -1, #PB_UTF8)        
+        s$ = ReplaceString(s$, #CRLF$, "")        
+        CALLBACK_ERROR(#SOURCE_ERROR_LIBSNDFILE$, s$, HERE()) 
+    EndIf
+    
+    Goto exit
+ EndIf
+ 
+ ProcedureReturn *b
+ 
+exit:
+
+ If *b : FreeStructure(*b) : EndIf  
+ 
+ If alIsBuffer(ALBuffer) : alDeleteBuffers(1, @ALBuffer) : EndIf
+
+ If *membuf : FreeMemory(*membuf) : EndIf
+ 
+ If sf : sf_close(sf) : EndIf  
+
+ ProcedureReturn 0
 
 EndProcedure
 
 Procedure.i CreateBufferFromFile (file$)
-;> Load an audio buffer from the sound file and returns its handle.
+;> Creates an audio buffer from the sound file and returns its handle.
 ; Load any of the supported audio formats in mono or stereo and converts any sample format to 16 bits for its internal use.
 ; Returns 0 in case of error.
  
@@ -825,9 +1029,15 @@ Procedure.i CreateBufferFromFile (file$)
     ; fill the buffer with audio data 
          
     alBufferData(*b\ALBuffer, *b\audioFormat, *membuf, bufSize, *b\samplerate)
-    If AL_ERROR() : Goto exit : EndIf
-                 
-    sf_close(sf)           
+    If AL_ERROR() : Goto exit : EndIf    
+                     
+
+    If SBBT::Insert(AUDIO\btBuffers, *b) = 0    
+        CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle in the BTree.")
+        Goto exit
+    EndIf
+    
+    sf_close(sf)
  Else
     Protected *p, s$
     
@@ -837,8 +1047,7 @@ Procedure.i CreateBufferFromFile (file$)
         
     If *p
         s$ = PeekS(*p, -1, #PB_UTF8)        
-        s$ = ReplaceString(s$, #CRLF$, "")
-        
+        s$ = ReplaceString(s$, #CRLF$, "")        
         CALLBACK_ERROR(#SOURCE_ERROR_LIBSNDFILE$, s$, HERE()) 
     EndIf
     
@@ -900,11 +1109,65 @@ Procedure.i CreateSound()
 
  *s\ALSource = ALSource
  
- If sbbt::Insert(AUDIO\btSounds, *s) = 0    
-    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the new sound handle in the BTree.")
+ If SBBT::Insert(AUDIO\btSounds, *s) = 0    
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the sound handle in the BTree.")
     Goto exit
  EndIf
     
+ ProcedureReturn *s
+ 
+exit:
+
+ If *s : FreeStructure(*s) : EndIf  
+
+ If alIsSource(ALSource) : alDeleteSources(1, @ALSource) : EndIf
+ 
+ ProcedureReturn 0
+EndProcedure
+
+Procedure.i CreateSoundFromBuffer (buffer)
+;> Create a sound from the passed audio buffer and returns its handle.
+; Returns 0 in case of error.
+ 
+ Protected *b.AudioBuffer = buffer
+ ASSERT (*b And *b\magic = #MAGIC_BUFFER)
+ 
+ Protected *s.SoundHandle
+  
+ If *b = #Null Or *b\ALBuffer = 0 Or alIsBuffer(*b\ALBuffer) = #AL_FALSE
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The passed OpenAL buffer is invalid.", HERE())
+    Goto exit
+ EndIf
+    
+ *s = AllocateStructure(SoundHandle)
+ ASSERT(*s)
+ 
+ *s\magic = #MAGIC_SOUND
+ 
+ *s\buffer = *b
+           
+ Protected ALSource
+        
+ alGenSources(1, @ALSource)
+ alSourcef(ALSource, #AL_PITCH, 1.0)
+ alSourcef(ALSource, #AL_GAIN, 1.0)
+ alSource3f(ALSource, #AL_POSITION, 0, 0, 0)
+ alSource3f(ALSource, #AL_VELOCITY, 0, 0, 0)
+ If AL_ERROR(): Goto exit : EndIf
+
+ *s\ALSource = ALSource
+    
+ ; binds the buffer to the source
+ alSourcei(*s\ALSource, #AL_BUFFER, *s\buffer\ALBuffer)
+ If AL_ERROR() : Goto exit : EndIf
+ 
+ *s\buffer\bindings + 1
+ 
+ If SBBT::Insert(AUDIO\btSounds, *s) = 0    
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the sound handle in the BTree.")
+    Goto exit
+ EndIf
+ 
  ProcedureReturn *s
  
 exit:
@@ -973,62 +1236,10 @@ exit:
  ProcedureReturn 0
 EndProcedure
 
-Procedure.i CreateSoundFromBuffer (buffer)
-;> Create a sound from the passed audio buffer and returns its handle.
-; Returns 0 in case of error.
- 
- Protected *b.AudioBuffer = buffer
- ASSERT (*b And *b\magic = #MAGIC_BUFFER)
- 
- Protected *s.SoundHandle
-  
- If *b = #Null Or *b\ALBuffer = 0 Or alIsBuffer(*b\ALBuffer) = #AL_FALSE
-    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The passed OpenAL buffer is invalid.", HERE())
-    Goto exit
- EndIf
-    
- *s = AllocateStructure(SoundHandle)
- ASSERT(*s)
- 
- *s\magic = #MAGIC_SOUND
- 
- *s\buffer = *b
-           
- Protected ALSource
-        
- alGenSources(1, @ALSource)
- alSourcef(ALSource, #AL_PITCH, 1.0)
- alSourcef(ALSource, #AL_GAIN, 1.0)
- alSource3f(ALSource, #AL_POSITION, 0, 0, 0)
- alSource3f(ALSource, #AL_VELOCITY, 0, 0, 0)
- If AL_ERROR(): Goto exit : EndIf
-
- *s\ALSource = ALSource
-    
- ; binds the buffer to the source
- alSourcei(*s\ALSource, #AL_BUFFER, *s\buffer\ALBuffer)
- If AL_ERROR() : Goto exit : EndIf
- 
- *s\buffer\bindings + 1
- 
- If sbbt::Insert(AUDIO\btSounds, *s) = 0    
-    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the new sound handle in the BTree.")
-    Goto exit
- EndIf
- 
- ProcedureReturn *s
- 
-exit:
-
- If *s : FreeStructure(*s) : EndIf  
-
- If alIsSource(ALSource) : alDeleteSources(1, @ALSource) : EndIf
- 
- ProcedureReturn 0
-EndProcedure
-
 Procedure DestroySound (sound)
-;> Destroy a sound releasing its own resource.
+;> Destroy a sound releasing its own resources.
+
+; Note this function never destroys the associated buffer, simply decrements its bindings counter.
 
  Protected *s.SoundHandle = sound
  ASSERT (*s And *s\magic = #MAGIC_SOUND)
@@ -1038,7 +1249,7 @@ Procedure DestroySound (sound)
  alSourceStop(*s\ALSource)
  AL_ERROR()
  
- ; detach the buffer
+ ; detach the buffer bound to the sound
  alSourcei(*s\ALSource, #AL_BUFFER, #AL_NONE)
  AL_ERROR()
  
@@ -1046,17 +1257,26 @@ Procedure DestroySound (sound)
     *s\buffer\bindings - 1
  EndIf   
  
- ; destroy the source
+ ; destroy the source bound to the sound
  alDeleteSources(1, @*s\ALSource)
  AL_ERROR()
-  
+
+ If SBBT::Delete(AUDIO\btSounds, *s) = 0
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "Error deleting the sound handle from the BTree.", HERE())
+ EndIf    
+ 
+ ; destroy the sound object 
  FreeStructure(*s)
+
 EndProcedure
 
 Procedure DestroyBuffer (buffer)
 ;> Destroy a buffer releasing its own resource.
-; Buffers which are attached to a source can not be deleted, so call this only when all the sounds using this buffer has been destroyed
-; else an error will be reported to the error callback and the buffer will remain untouched.
+
+; Buffers which are attached to a source can not be deleted, so call this only when all the sounds using this buffer has been destroyed,
+; else an error will be reported to the error callback and the buffer will be left untouched.
+
+; You can use IsBufferBound() to check if the buffer is stil bound to a sound.
 
  Protected *b.AudioBuffer = buffer
  ASSERT (*b And *b\magic = #MAGIC_BUFFER)
@@ -1068,9 +1288,14 @@ Procedure DestroyBuffer (buffer)
     alDeleteBuffers(1, @*b\ALBuffer)
     AL_ERROR()
     
+    ; destroy the buffer object 
     FreeStructure(*b)
+    
+    If SBBT::Delete(AUDIO\btBuffers, *b) = 0
+        CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "Error deleting the buffer handle from the BTree.", HERE())
+    EndIf    
  Else
-    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "Some instances of the buffer are still bound", HERE())
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "Some instances of the buffer are still bound.", HERE())
  EndIf  
 EndProcedure
 
@@ -1145,6 +1370,10 @@ Procedure.i GetLength (sound, format)
 EndProcedure
 
 Procedure SetLooping (sound, loop)
+; Set the looping state for the specified sound.
+
+; loop should be set to 0 or 1
+
  Protected *s.SoundHandle = sound
  ASSERT (*s And *s\magic = #MAGIC_SOUND)
  ASSERT (*s\buffer)
@@ -1255,31 +1484,14 @@ Procedure Play (sound, loop = #False)
  ASSERT (*s\buffer)
  
  If alIsBuffer(*s\buffer\ALBuffer) = #AL_FALSE
-    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The associated OpenAL buffer is no longer valid.", HERE())
-    Goto exit
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "The associated OpenAL buffer is invalid.", HERE())
+    ProcedureReturn 
  EndIf
  
  alSourcei(*s\ALSource, #AL_LOOPING, Bool(loop))
  AL_ERROR() 
  
  alSourcePlay(*s\ALSource)
- AL_ERROR()
- 
-exit:
-
-EndProcedure
-
-Procedure Stop (sound)
-;> Stop the reporduction of the specified audio file.
-
- Protected *s.SoundHandle = sound
- ASSERT (*s And *s\magic = #MAGIC_SOUND)
- ASSERT (*s\buffer)
- 
- alSourceStop(*s\ALSource)
- AL_ERROR()
-
- alSourcei(*s\ALSource, #AL_LOOPING, 0)
  AL_ERROR()
 EndProcedure
 
@@ -1312,9 +1524,216 @@ Procedure Resume (sound)
  EndIf
 EndProcedure 
 
+Procedure Stop (sound)
+;> Stop the reproduction of the specified audio file.
+
+ Protected *s.SoundHandle = sound
+ ASSERT (*s And *s\magic = #MAGIC_SOUND)
+ ASSERT (*s\buffer)
+ 
+ alSourceStop(*s\ALSource)
+ AL_ERROR()
+
+ alSourcei(*s\ALSource, #AL_LOOPING, 0)
+ AL_ERROR()
+EndProcedure
+
+Procedure PlayArray (Array sounds(1))
+;> Start playing the sounds listed in the array while guaranteeing synchronized operation.
+
+ Protected *s.SoundHandle
+ Protected i, count = ArraySize(sounds())
+
+ Dim sources.l(count)
+
+ For i = 0 To count 
+    *s = sounds(i)
+    ASSERT (*s And *s\magic = #MAGIC_SOUND)
+    ASSERT (*s\buffer)
+    
+    sources(i) =  *s\ALSource    
+ Next
+
+ alSourcePlayv(count + 1, @sources())
+ AL_ERROR()
+EndProcedure
+
+Procedure PauseArray (Array sounds(1))
+;> Pause the reproduction of the sounds listed in the array while guaranteeing synchronized operation.
+
+ Protected *s.SoundHandle
+ Protected i, count = ArraySize(sounds())
+
+ Dim sources.l(count)
+
+ For i = 0 To count 
+    *s = sounds(i)
+    ASSERT (*s And *s\magic = #MAGIC_SOUND)
+    ASSERT (*s\buffer)
+      
+    sources(i) =  *s\ALSource    
+ Next
+
+ alSourcePausev(count + 1, @sources())
+ AL_ERROR()
+EndProcedure
+
+Procedure ResumeArray (Array sounds(1))
+;> Resume the reproduction of the sounds listed in the array which are currently paused while guaranteeing synchronized operation.
+
+ Protected *s.SoundHandle
+ Protected i, count = ArraySize(sounds())
+ Protected state, pausedCount
+
+ Dim sources.l(count)
+
+ pausedCount = 0
+ 
+ For i = 0 To count 
+    *s = sounds(i)
+    ASSERT (*s And *s\magic = #MAGIC_SOUND)
+    ASSERT (*s\buffer)
+
+    alGetSourcei(*s\ALSource, #AL_SOURCE_STATE, @state)
+    AL_ERROR()
+
+    If state = #AL_PAUSED  
+        sources(pausedCount) =  *s\ALSource
+        pausedCount + 1
+    EndIf      
+ Next
+
+ alSourcePlayv(pausedCount, @sources())
+ AL_ERROR()
+EndProcedure
+
+Procedure StopArray (Array sounds(1))
+;> Stop the reproduction of the sounds listed in the array while guaranteeing synchronized operation.
+
+ Protected *s.SoundHandle
+ Protected i, count = ArraySize(sounds())
+
+ Dim sources.l(count)
+
+ For i = 0 To count 
+    *s = sounds(i)
+    ASSERT (*s And *s\magic = #MAGIC_SOUND)
+    ASSERT (*s\buffer)
+      
+    sources(i) =  *s\ALSource    
+ Next
+
+ alSourceStopv(count + 1, @sources())
+ AL_ERROR()
+EndProcedure
+
+Procedure PauseAll()
+;> Pause the reproduction of every sound currently playing.
+
+ Protected soundsCount, state, pausedCount
+ Protected *s.SoundHandle
+   
+ soundsCount = SBBT::Count(AUDIO\btSounds)
+  
+ If soundsCount
+    Dim sources.l (soundsCount - 1)
+        
+    SBBT::EnumStart(AUDIO\btSounds)    
+    pausedCount = 0
+        
+    While SBBT::EnumNext(AUDIO\btSounds)
+        *s = SBBT::GetKey(AUDIO\btSounds)
+        ASSERT (*s And *s\magic = #MAGIC_SOUND)
+        
+        alGetSourcei(*s\ALSource, #AL_SOURCE_STATE, @state)
+        AL_ERROR()
+        
+        If state = #AL_PLAYING
+            sources(pausedCount) = *s\ALSource
+            pausedCount + 1
+        EndIf
+    Wend
+    
+    SBBT::EnumEnd(AUDIO\btSounds)
+ EndIf
+
+ alSourcePausev(pausedCount, @sources())
+ AL_ERROR()
+EndProcedure
+
+Procedure ResumeAll()
+;> Resume the reproduction of every sound currently paused.
+
+ Protected soundsCount, state, pausedCount
+ Protected *s.SoundHandle
+  
+ soundsCount = SBBT::Count(AUDIO\btSounds)
+  
+ If soundsCount
+    Dim sources.l (soundsCount - 1)
+        
+    SBBT::EnumStart(AUDIO\btSounds)    
+    pausedCount = 0
+        
+    While SBBT::EnumNext(AUDIO\btSounds)
+        *s = SBBT::GetKey(AUDIO\btSounds)
+        ASSERT (*s And *s\magic = #MAGIC_SOUND)
+        
+        alGetSourcei(*s\ALSource, #AL_SOURCE_STATE, @state)
+        AL_ERROR()
+        
+        If state = #AL_PAUSED
+            sources(pausedCount) = *s\ALSource
+            pausedCount + 1
+        EndIf
+    Wend
+    
+    SBBT::EnumEnd(AUDIO\btSounds)
+ EndIf
+
+ alSourcePlayv(pausedCount, @sources())
+ AL_ERROR()
+EndProcedure
+
+Procedure StopAll()
+;> Stop every sound currently playing or paused.
+
+ Protected soundsCount, state, i
+ Protected *s.SoundHandle
+   
+ soundsCount = SBBT::Count(AUDIO\btSounds)
+  
+ If soundsCount
+    Dim sources.l (soundsCount - 1)
+        
+    SBBT::EnumStart(AUDIO\btSounds)
+    i = 0
+        
+    While SBBT::EnumNext(AUDIO\btSounds)
+        *s = SBBT::GetKey(AUDIO\btSounds)
+        ASSERT (*s And *s\magic = #MAGIC_SOUND)
+
+        alGetSourcei(*s\ALSource, #AL_SOURCE_STATE, @state)
+        AL_ERROR()
+        
+        If state = #AL_PLAYING Or state = #AL_PAUSED
+            sources(i) = *s\ALSource
+            i + 1
+        EndIf
+                        
+        sources(i) = *s\ALSource        
+    Wend
+    
+    SBBT::EnumEnd(AUDIO\btSounds)
+ EndIf
+
+ alSourceStopv(i, @sources())
+ AL_ERROR()
+EndProcedure
+
 Procedure SetVolume (sound, volume.f)
-;> Set the volume of the specified audio file (from 0.0 to 1.0)
-; The volume can actually set higher then 1.0 but it may lowered during mixing to avoid clipping.
+;> Set the volume of the specified sound (from 0.0 to 1.0)
+; The volume can actually be set higher then 1.0 but it may lowered during mixing to avoid clipping.
 
  Protected *s.SoundHandle = sound
  ASSERT (*s And *s\magic = #MAGIC_SOUND)
@@ -1325,20 +1744,9 @@ Procedure SetVolume (sound, volume.f)
  EndIf
 EndProcedure
 
-Procedure.f GetGlobalVolume()
-;> Returns the global volume (from 0.0 to 1.0)
-
- Protected volume.f
-
- alGetListenerf(#AL_GAIN, @volume)
- AL_ERROR()
-
- ProcedureReturn volume
-EndProcedure
-
 Procedure SetGlobalVolume (volume.f)
 ;> Set the global volume (from 0.0 to 1.0)
-; The volume can actually set higher then 1.0 but it may lowered during mixing to avoid clipping.
+; The volume can actually be set higher then 1.0 but it may lowered during mixing to avoid clipping.
 
  If volume >= 0.0
      alListenerf(#AL_GAIN, volume)
@@ -1360,8 +1768,8 @@ EndProcedure
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 16
-; Markers = 75,137,163
+; CursorPosition = 32
+; Markers = 64
 ; EnableXP
 ; EnableUser
 ; CPU = 1

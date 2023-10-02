@@ -61,7 +61,7 @@ Procedure.i OpenDll (dll$)
     If h : Break : EndIf    
  ForEver
  
- ; try dynamic library from the predefined directory for the development environment
+ ; try from the predefined directory for the development environment
  If h = 0 And InsideIDE()    
     p$ = #PB_Compiler_FilePath + "lib/" + dll$    
     h = OpenLibrary(#PB_Any, p$)
@@ -223,8 +223,8 @@ EndProcedure
 
 EndModule
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 2
-; Folding = ---
+; CursorPosition = 63
+; FirstLine = 26
 ; EnableXP
 ; EnableUser
 ; CPU = 1

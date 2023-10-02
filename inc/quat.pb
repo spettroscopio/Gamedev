@@ -204,15 +204,17 @@ vec4::Dump(axis) ; rotated point (3.00, 2.00, -1.00)
 quat::RotateVec (p,axis,90, rp)
 vec3::Dump(rp) ; rotated point (3.00, 2.00, -1.00)
 
-quat::Identity(p) ; a null rotation 
-vec4::Dump(p) ; (1.00, 0.00, 0.00, 0.00)
+quat::Identity(q) ; a null rotation 
+vec4::Dump(q) ; (1.00, 0.00, 0.00, 0.00)
 
 CompilerEndIf
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; Folding = ---
+; CursorPosition = 204
+; FirstLine = 162
 ; Markers = 22
 ; EnableXP
 ; EnableUser
 ; CPU = 1
 ; CompileSourceDirectory
+; EnablePurifier
