@@ -1,5 +1,5 @@
-AUDIO module for PureBasic
-written by Luis Miguel Gava aka "luis"
+AUDIO module for PureBasic<br>
+written by Luis Miguel Gava aka "luis"<br>
 
 The module requires OpenAL Soft which is released under the GNU Lesser General Public License version 2.<br>
 https://openal-soft.org/<br>
