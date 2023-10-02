@@ -1,6 +1,5 @@
 # Gamedev stuff for PureBasic
 This repository contains the stuff I'm writing while experimenting with OpenGL and game development using Purebasic.<br>
-Maybe some of this can be useful to someone else so here it is.<br>
 <br>
 At the moment the repo contains:<br>
 
