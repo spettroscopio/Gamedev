@@ -1,5 +1,5 @@
 # Gamedev stuff
-This repository contains the stuff I'm writing while experimenting with OpenGL and game development using Purebasic.<br>
+This repository contains the code I'm writing while experimenting with OpenGL and game development using Purebasic.<br>
 <br>
 At the moment the repo contains:<br>
 
@@ -15,4 +15,4 @@ You can find the module under the directory "./audio", the binding to the OpenAl
 The bindings can be used by themselves if you are interested only in [OpenAL Soft](https://openal-soft.org/) or [LibSndFile](http://libsndfile.github.io/libsndfile/).<br> 
 Description [here](https://github.com/spettroscopio/gamedev/blob/main/audio/README.md).<br>
 <br>
-Plus various supporting code under the "./inc" directory wich is shared by the main modules.<br>
+Plus various supporting code under the "./inc" directory shared among the main modules.<br>
