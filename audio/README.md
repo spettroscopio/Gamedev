@@ -1,5 +1,5 @@
 # AUDIO
-AUDIO for P1ureBasic.<br>
+AUDIO for PureBasic.<br>
 AUDIO is a module built on top of OpenAL Soft (1.23.1) and LibSndFile (1.2.0), and it offers an alternative way to play sounds in PureBasic.<br>
 
 It can use different backends that are automatically selected based on what is available on the OS.<br>
