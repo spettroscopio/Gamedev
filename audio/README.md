@@ -2,6 +2,10 @@
 AUDIO for PureBasic.<br>
 AUDIO is a module built on top of OpenAL Soft (1.23.1) and LibSndFile (1.2.0), and it offers an alternative way to play sounds in PureBasic.<br>
 
+The module load sound data as buffers, and then bind each buffer to one or more sound instances to play it.<br>
+Can load sound files from the filesystem or from files embedded in the executable.<br>
+Can also load raw sound data from memory.<br>
+
 It can use different backends that are automatically selected based on what is available on the OS.<br>
 
 On Windows has support for WinMM, DirectSound, WASAPI.<br>
