@@ -2,16 +2,21 @@
 ; audio.pb
 ; by luis
 ;
-; To play sounds.
+; This module load sound data as buffers, and then bind a buffer to one or more sound instances to play it.
+; Can load sound files from the filesystem or from files embedded in the executable.
+; Can also load raw sound data from memory.
+; It should be able to read any file format supported by LibSndFile, the ones I tested are: Wave, MP3, OGG, Flac.
 ;
-; Tested on: Windows (x86, x64)
+; On Windows has support for WinMM, DirectSound, WASAPI.
+; On Linux has support for PulseAudio, ALSA, SndIO, SDL2.
 ;
-; 1.0, Aug 03 2023, PB 6.02 
+; Tested on: Windows (x86, x64), Linux (x64)
+;
+; 0.9, Aug 03 2023, PB 6.02 
 ; *********************************************************************************************************************
 
 ; TODO
-
-; 3D sound
+; Add 3D positional sound support
 
 XIncludeFile "./openal-soft/openal.pbi" 
 XIncludeFile "./openal-soft/openal.load.pb" 
@@ -56,7 +61,7 @@ Structure SoundFileInfo
  bytes.i        ; size in bytes of the audio data after being loaded in memory
 EndStructure
 
-Structure SoundLocation
+Structure SoundPosition
 ; TODO
 EndStructure
 
@@ -93,8 +98,8 @@ Declare.i    GetSampleRate (sound) ; Returns the sample rate in Hz of the sound.
 Declare.i    GetLength (sound, format) ; Returns the length of the sound expressed in milliseconds or frames.
 Declare      SetLooping (sound, loop) ; Set the looping state for the specified sound.
 Declare.i    GetState (sound) ; Returns the current state of the sound.
-Declare.i    GetPos (sound, format) ; Returns the current position in milliseconds or frames for the specified sound.
-Declare      SetPos (sound, position, format) ; Sets the sound current position in milliseconds or frames.
+Declare.i    GetOffset (sound, format) ; Returns the current position in milliseconds or frames for the specified sound.
+Declare      SetOffset (sound, offset, format) ; Sets the sound current position in milliseconds or frames.
 Declare      Play (sound, loop = #False) ; Start playing the specified audio file.
 Declare      Pause (sound) ; Pause the reproduction of the specified audio file.
 Declare      Resume (sound) ; Resume the reproduction of specified sound if it was paused, else do nothing.
@@ -108,7 +113,6 @@ Declare      ResumeAll() ; Resume the reproduction of every sound currently paus
 Declare      StopAll() ; Stop every sound currently playing or paused.
 Declare      SetVolume (sound, volume.f) ; Set the volume of the specified sound (from 0.0 to 1.0)
 Declare      SetGlobalVolume (volume.f) ; Set the global volume (from 0.0 to 1.0)
-Declare      SetLocation (sound, *loc.SoundLocation)
 
 EndDeclareModule
 
@@ -819,7 +823,7 @@ Procedure.i CreateBufferFromMemory (bits, samplerate, channels, *data, dataSize)
  If AL_ERROR() : Goto exit : EndIf
  
  If SBBT::Insert(AUDIO\btBuffers, *b) = 0    
-    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle in the BTree.")
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle.")
     Goto exit
  EndIf
                   
@@ -922,7 +926,7 @@ Procedure.i CreateBufferFromMemoryFile (*data, dataSize)
                      
 
     If SBBT::Insert(AUDIO\btBuffers, *b) = 0    
-        CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle in the BTree.")
+        CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle.")
         Goto exit
     EndIf
     
@@ -1033,7 +1037,7 @@ Procedure.i CreateBufferFromFile (file$)
                      
 
     If SBBT::Insert(AUDIO\btBuffers, *b) = 0    
-        CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle in the BTree.")
+        CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the buffer handle.")
         Goto exit
     EndIf
     
@@ -1095,7 +1099,7 @@ Procedure.i CreateSound()
  *s\ALSource = ALSource
  
  If SBBT::Insert(AUDIO\btSounds, *s) = 0    
-    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the sound handle in the BTree.")
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the sound handle.")
     Goto exit
  EndIf
     
@@ -1147,7 +1151,7 @@ Procedure.i CreateSoundFromBuffer (buffer)
  *s\buffer\bindings + 1
  
  If SBBT::Insert(AUDIO\btSounds, *s) = 0    
-    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the sound handle in the BTree.")
+    CALLBACK_ERROR (#SOURCE_ERROR_AUDIO$, "Error storing the sound handle.")
     Goto exit
  EndIf
  
@@ -1233,16 +1237,6 @@ Procedure.i BindBuffer (sound, buffer)
  
  Protected *b.AudioBuffer = buffer
  ASSERT(*b And *b\magic = #MAGIC_BUFFER)
- 
-; FIXME          
-
-;  ASSERT_START
-;   CompilerIf (#PB_Compiler_Debugger = 1)
-;     If *b And *b\magic <> #MAGIC_BUFFER
-;         ASSERT_FAIL()
-;     EndIf
-;   CompilerEndIf
-;  ASSERT_END
  
  ; test if the buffer *b is valid, but a #Null buffer is also OK and pass the test
  If *b And (*b\ALBuffer = 0 Or alIsBuffer(*b\ALBuffer) = #AL_FALSE)
@@ -1423,7 +1417,7 @@ Procedure.i GetState (sound)
  
 EndProcedure
 
-Procedure.i GetPos (sound, format)
+Procedure.i GetOffset (sound, format)
 ;> Returns the current position in milliseconds or frames for the specified sound.
 ; format: #Milliseconds or #Frames
 
@@ -1449,11 +1443,10 @@ Procedure.i GetPos (sound, format)
     ProcedureReturn 0   
 EndProcedure
 
-Procedure SetPos (sound, position, format)
+Procedure SetOffset (sound, offset, format)
 ;> Sets the sound current position in milliseconds or frames.
-
 ; format: #Milliseconds or #Frames
-; if position is outside a valid range nothing happens
+; if offset is outside a valid range nothing happens
 
  Protected *s.SoundHandle = sound
  ASSERT (*s And *s\magic = #MAGIC_SOUND)
@@ -1463,9 +1456,9 @@ Procedure SetPos (sound, position, format)
  
  Select format 
     Case #Milliseconds
-        frames = (position / 1000.0) * (*s\buffer\samplerate)
+        frames = (offset / 1000.0) * (*s\buffer\samplerate)
     Case #Frames
-        frames = position
+        frames = offset
     Default
         ASSERT_FAIL() ; wrong time format
  EndSelect
@@ -1760,23 +1753,23 @@ Procedure SetGlobalVolume (volume.f)
  EndIf
 EndProcedure
 
-Procedure SetLocation (sound, *loc.SoundLocation)
+Procedure SetPosition (sound, *pos.SoundPosition)
  Protected *s.SoundHandle = sound
  ASSERT (*s And *s\magic = #MAGIC_SOUND)
  
  If *s\buffer\channels <> 1 
-    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "SetLocation is supported only for mono audio.", HERE())
+    CALLBACK_ERROR(#SOURCE_ERROR_AUDIO$, "SetPosition is supported only for mono audio.", HERE())
     ProcedureReturn 
  EndIf
- 
+ ; TODO
 EndProcedure
 
 EndModule
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 111
-; FirstLine = 63
-; Markers = 64
+; CursorPosition = 65
+; FirstLine = 49
+; Markers = 69
 ; EnableXP
 ; EnableUser
 ; CPU = 1

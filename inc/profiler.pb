@@ -66,7 +66,8 @@ EndMacro
 EndDeclareModule
 
 Module profiler
- ; NOP
+ ; No reason for an empty module   
+ ; https://www.purebasic.fr/english/viewtopic.php?p=575664#p575664
 EndModule
 
 CompilerElse
@@ -382,8 +383,8 @@ EndModule
 CompilerEndIf
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 382
-; FirstLine = 332
+; CursorPosition = 56
+; FirstLine = 47
 ; EnableXP
 ; EnableUser
 ; CPU = 1
