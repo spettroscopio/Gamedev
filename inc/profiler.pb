@@ -2,15 +2,15 @@
 ; profiler.pb
 ; by luis 
 ;
+; Varius macros useful for simple profiling.
+;
 ; Some ASM code from idle
 ; https://www.purebasic.fr/english/viewtopic.php?t=81099
 ;
-; The module is enabled when #PROFILER_ENABLED = 1 is defined before its inclusion and completely removed from 
-; the code when #PROFILER_ENABLED = 0 is defined.
+; The module is enabled when #PROFILER_ENABLED = 1 is defined before its inclusion and completely removed 
+; when #PROFILER_ENABLED = 0 is defined.
 ;
-; The module namespace * MUST * be imported with "Usemodule profiler".
-;
-; Varius stuff useful for simple profiling.
+; The module namespace *MUST* be imported with "Usemodule profiler".
 ;
 ; OS: Windows, Linux
 ;
@@ -80,7 +80,7 @@ Macro PROFILER_START (section = "")
     If #PB_Compiler_Procedure <> ""   
         _PROFILER_START (#PB_Compiler_Procedure + "()", _PROFILER_KEY())
     Else
-        DebuggerError("A section name must be specified when outside procedures.")
+        DebuggerError("A section name must be specified when used outside procedures.")
     EndIf
  EndIf
  
@@ -93,7 +93,7 @@ Macro PROFILER_STOP (section = "")
     If #PB_Compiler_Procedure <> ""   
         _PROFILER_STOP (#PB_Compiler_Procedure + "()", _PROFILER_KEY())
     Else
-        DebuggerError("A section name must be specified when outside procedures.")
+        DebuggerError("A section name must be specified when used outside procedures.")
     EndIf
  EndIf
 EndMacro
@@ -337,10 +337,6 @@ Procedure _PROFILER_REPORT (w, h)
  AddGadgetColumn(#LIST_ICON, 4, "Cycles", width)
  AddGadgetColumn(#LIST_ICON, 5, "Avg Cycles", width - 20)
  
-;  ButtonGadget(#BTN_CLOSE, w - 105 , h - 33, 100 , 28, "Close")
-;  ButtonGadget(#BTN_SRT_ASC, 5, h - 33, 100 , 28, "Asc")
-;  ButtonGadget(#BTN_SRT_DESC, 110, h - 33, 100 , 28, "Desc")
-
  ButtonGadget(#BTN_CLOSE, 0, 0, 100 , 28, "Close")
  ButtonGadget(#BTN_SRT_ASC, 0, 0, 100 , 28, "Asc")
  ButtonGadget(#BTN_SRT_DESC, 0, 0, 100 , 28, "Desc")
@@ -386,7 +382,8 @@ EndModule
 CompilerEndIf
 
 ; IDE Options = PureBasic 6.02 LTS (Windows - x86)
-; CursorPosition = 4
+; CursorPosition = 382
+; FirstLine = 332
 ; EnableXP
 ; EnableUser
 ; CPU = 1

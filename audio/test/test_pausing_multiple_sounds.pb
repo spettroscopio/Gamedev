@@ -32,7 +32,7 @@ Procedure Main()
  Protected s3 = audio::CreateSoundFromBuffer(b3)
  
  If s1 And s2 And s3     
-    Debug "Playing three sound files at the same time"
+    Debug "Playing three sounds at the same time"
     
     audio::SetVolume(s1, 1.0)
     audio::SetVolume(s2, 0.5)
@@ -83,9 +83,9 @@ If audio::Init()
     Main()
     audio::Shutdown()
 EndIf
-; IDE Options = PureBasic 6.02 LTS (Windows - x64)
-; CursorPosition = 80
-; FirstLine = 21
+; IDE Options = PureBasic 6.02 LTS (Windows - x86)
+; CursorPosition = 34
+; FirstLine = 30
 ; EnableXP
 ; EnableUser
 ; CPU = 1
