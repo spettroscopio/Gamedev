@@ -8,7 +8,7 @@ On Windows has support for WinMM, DirectSound, WASAPI.<br>
 
 On Linux has support for PulseAudio, ALSA, SndIO, SDL2.<br>
 
-It should be able to read any sound file format supported by LibSndFile, the ones I tested in mono and stereo are: Wave, MP3, OGG, Flac. 
+It should be able to read any file format supported by LibSndFile, the ones I tested are: Wave, MP3, OGG, Flac.
 
 It works on Windows (32/64 bits) and Linux (64 bits).<br>
 <br>
