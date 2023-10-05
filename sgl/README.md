@@ -15,7 +15,6 @@ The sub-repository is organized this way:
 | extensions | A template to show how to implement specific extensions support. |
 | examples | Short examples to demonstrates the use of SGL commands in practice. |
 | demos | Longer examples, to experiment with specific OpenGL features. |
-| inc | Supporting includes of various nature, for example debugging, matrices, vectors, etc. |
 
 ### What you need to run this ?
 Just PureBasic. The only dependency is the GLFW library and it's included.<br>
