@@ -12,10 +12,4 @@ If you use this software in a product, an acknowledgment in the product itself o
 This notice may not be removed or altered from any source distribution.<br>
 
 GLFW is released under the the zlib/libpng license.<br>
-https://www.glfw.org/license<br>
-
-OpenAL Soft is released under the GNU Lesser General Public License version 2.<br>
-https://openal-soft.org/<br>
-
-libsndfile is released under the GNU Lesser General Public License, either version 2.1 or optionally version 3.<br>
-http://libsndfile.github.io/libsndfile/#licensing<br>
+https://www.glfw.org/license <br>
